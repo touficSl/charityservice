@@ -33,7 +33,13 @@ public class Users {
 	
 	private String otp;
 	
-    private List<String> authorizedapis;
+	private String parentrole;
+	
+	private String team;
+	
+    private boolean isadmin;
+    
+    private List<Authorization> authorizedapis;
     
 	public Users() {
 	}
@@ -51,11 +57,18 @@ public class Users {
 		this.first_name_ar = verifyAuthResponse.has("first_name_ar") && !verifyAuthResponse.get("first_name_ar").equals(null) ? verifyAuthResponse.getString("first_name_ar") : null;
 		this.last_name_ar = verifyAuthResponse.has("last_name_ar") && !verifyAuthResponse.get("last_name_ar").equals(null) ? verifyAuthResponse.getString("last_name_ar") : null;
 		this.date_time = verifyAuthResponse.has("date_time") && !verifyAuthResponse.get("date_time").equals(null) ? verifyAuthResponse.getString("date_time") : null;
+		
+		this.parentrole = verifyAuthResponse.has("parentrole") && !verifyAuthResponse.get("parentrole").equals(null) ? verifyAuthResponse.getString("parentrole") : null;
+		this.team = verifyAuthResponse.has("team") && !verifyAuthResponse.get("team").equals(null) ? verifyAuthResponse.getString("team") : null;
+		
+		this.isadmin = verifyAuthResponse.has("isadmin") && !verifyAuthResponse.get("isadmin").equals(null) ? verifyAuthResponse.getBoolean("isadmin") : false;
+		
 		JSONArray authorizedapisarray = verifyAuthResponse.has("authorizedapis") && !verifyAuthResponse.get("authorizedapis").equals(null) ? verifyAuthResponse.getJSONArray("authorizedapis") : new JSONArray();
 	
-		this.authorizedapis = new ArrayList<String>();
+		this.authorizedapis = new ArrayList<Authorization>();
 		for (Object obj : authorizedapisarray) {
-			this.authorizedapis.add(obj.toString());
+			JSONObject jsonObject = (JSONObject) obj; 
+			this.authorizedapis.add(new Authorization(jsonObject));
 		}
 	}
 
@@ -163,11 +176,35 @@ public class Users {
 		this.otp = otp;
 	}
 
-	public List<String> getAuthorizedapis() {
+	public List<Authorization> getAuthorizedapis() {
 		return authorizedapis;
 	}
 
-	public void setAuthorizedapis(List<String> authorizedapis) {
+	public void setAuthorizedapis(List<Authorization> authorizedapis) {
 		this.authorizedapis = authorizedapis;
+	}
+
+	public String getParentrole() {
+		return parentrole;
+	}
+
+	public void setParentrole(String parentrole) {
+		this.parentrole = parentrole;
+	}
+
+	public String getTeam() {
+		return team;
+	}
+
+	public void setTeam(String team) {
+		this.team = team;
+	}
+
+	public boolean isIsadmin() {
+		return isadmin;
+	}
+
+	public void setIsadmin(boolean isadmin) {
+		this.isadmin = isadmin;
 	}
 }

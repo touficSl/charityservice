@@ -1,18 +1,32 @@
 package com.service.charity.config;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import org.apache.commons.text.StringEscapeUtils;
+import com.service.charity.model.Authorization;
+
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Utils {
-	
-	public static boolean isapiauthorized(String url, List<String> authorizedapis) {
-		for (String authapi : authorizedapis)
-			if (url.contains(authapi))
-				return true;
+
+	public static boolean isapiauthorized(String url, String menuauthid, List<Authorization> authorizedapis) {
+
+		if (authorizedapis == null || authorizedapis.size() == 0)
+    		return false;
+    	for (Authorization auth : authorizedapis) {
+    		if (url.contains(auth.getApi()) && menuauthid != null && auth.getMenuauthid().equals(menuauthid))
+    			return true;
+    		else if (url.contains(auth.getApi()))
+    			return true;
+    	}
 		return false;
 	}
 
@@ -23,8 +37,67 @@ public class Utils {
 		ObjectMapper mapper = new ObjectMapper();
 		return mapper.writeValueAsString(object);
 	}
-	
-	public static String generateUUID(String prefix) {
+
+    public static String generateUniqueString(String name) {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+        String formattedDateTime = now.format(formatter);
+        return name + "_" + formattedDateTime;
+    }
+    
+    public static int concertStringtoInteger(String strnbr) {
+    	try {
+    		return Integer.parseInt(strnbr);
+    	}catch (Exception e) {
+		}
+    	return -1;
+    }
+    
+    public static String generateId(String key) {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(Constants.DATETIME_FORMAT_ID);
+        String dateTime = now.format(formatter);
+        String uuid = UUID.randomUUID().toString();
+        String id = key + dateTime + "-" + uuid;
+        return id;
+    }
+    
+    public static Date convertStringToDate(String datestr, String format) {
+
+    	if (datestr == null || datestr.equals(""))
+    		return null;
+    	if (format == null)
+    		format = Constants.DATE_FORMAT;
+        SimpleDateFormat formatter = new SimpleDateFormat(format);
+        try {
+            Date date = formatter.parse(datestr);
+            return date;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    public static Date addMonthsToDate(Date date, int months) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);  // Set the calendar's time to the given date
+        calendar.add(Calendar.MONTH, months);  // Add the specified number of months
+        return calendar.getTime();  // Return the updated date
+    }
+    
+    public static String decodeString(String str) {
+    	try {
+    		return StringEscapeUtils.unescapeHtml4(str);
+    	} catch (Exception e) {
+    	}
+    	return str;
+    }
+    
+    public static String returnOTPSMSMessage() {
+		return Constants.OTP_SMS_MESSAG_KEY + generateOTP(6);
+	}
+    
+    public static String generateUUID(String prefix) {
         return prefix + UUID.randomUUID().toString(); 
     }
 
@@ -36,10 +109,5 @@ public class Utils {
 			otp[i] = numbers.charAt(rndm_method.nextInt(numbers.length()));
 		
 		return new String(otp);
-	}
-
-
-	public static String returnOTPSMSMessage() {
-		return Constants.OTP_SMS_MESSAG_KEY + generateOTP(6);
 	}
 }

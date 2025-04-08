@@ -20,6 +20,10 @@ public class Constants {
 
 	public static final String ADMIN_PATH = "/api/admin/";
 
+	public static final String DATE_FORMAT = "yyyy-MM-dd";
+	public static final String DATETIME_FORMAT_ID = "yyyyMMddHHmmss";
+	public static final String DATETIME_FORMAT = "dd-MM-yyyy HH:mm";
+
 	public static final String PROJECT_PREFIX = "PRCT_";
 
     public static final String SELLER_ID = "255484310947";
