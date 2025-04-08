@@ -1,0 +1,63 @@
+package com.service.charity.builder.request;
+
+import java.math.BigDecimal;
+import java.util.Date;
+
+public class ProjectRq {
+
+    private Long id;
+
+    private String reference;
+
+    private String title;
+
+    private String description;
+
+    private Date estimationTime;
+
+    private BigDecimal cost;
+
+    private BigDecimal totalCharityAmount;
+
+    private Date dateTime;
+
+    private String type;
+
+    private String status;
+
+    private Boolean enable;
+
+    // Getters and Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getReference() { return reference; }
+    public void setReference(String reference) { this.reference = reference; }
+
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public Date getEstimationTime() { return estimationTime; }
+    public void setEstimationTime(Date estimationTime) { this.estimationTime = estimationTime; }
+
+    public BigDecimal getCost() { return cost; }
+    public void setCost(BigDecimal cost) { this.cost = cost; }
+
+    public BigDecimal getTotalCharityAmount() { return totalCharityAmount; }
+    public void setTotalCharityAmount(BigDecimal totalCharityAmount) { this.totalCharityAmount = totalCharityAmount; }
+
+    public Date getDateTime() { return dateTime; }
+    public void setDateTime(Date dateTime) { this.dateTime = dateTime; }
+
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public Boolean getEnable() { return enable; }
+    public void setEnable(Boolean enable) { this.enable = enable; }
+}
