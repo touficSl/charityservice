@@ -1,7 +1,8 @@
 package com.service.charity.model;
 
+import java.util.Date;
+
 import jakarta.persistence.*;
-import java.sql.Timestamp;
 
 @Entity
 @Table(name = "project_images")
@@ -27,8 +28,8 @@ public class ProjectImage {
     @Column(name = "order")
     private Integer order;
 
-    @Column(name = "date_time", nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Timestamp dateTime;
+    @Column(name = "date_time", nullable = false, updatable = false, insertable = false, columnDefinition = "Date DEFAULT CURRENT_Date")
+    private Date dateTime;
 
     // Getters and Setters
     public Long getId() { return id; }
@@ -49,6 +50,6 @@ public class ProjectImage {
     public Integer getOrder() { return order; }
     public void setOrder(Integer order) { this.order = order; }
 
-    public Timestamp getDateTime() { return dateTime; }
-    public void setDateTime(Timestamp dateTime) { this.dateTime = dateTime; }
+    public Date getDateTime() { return dateTime; }
+    public void setDateTime(Date dateTime) { this.dateTime = dateTime; }
 }

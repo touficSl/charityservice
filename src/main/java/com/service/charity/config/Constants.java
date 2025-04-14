@@ -28,4 +28,6 @@ public class Constants {
 
     public static final String SELLER_ID = "255484310947";
     public static final String SECRET_WORD = "c_P9elRfxvAX6i[T28t#";
+
+	public static final String PROJECT_KEY = "PRJT_";
 }

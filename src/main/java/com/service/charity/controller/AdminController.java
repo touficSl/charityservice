@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.service.charity.builder.request.ProjectRq;
 import com.service.charity.model.Users;
@@ -84,4 +86,36 @@ public class AdminController {
         // Call the service to get the charity statistics
         return charityStatisticsService.getCharityStatistics(username);
     }
+	
+	
+
+	@RequestMapping(value = "/project/files/list", method = RequestMethod.POST)
+	public ResponseEntity<?> fileslist(HttpServletRequest request,
+											  @RequestHeader(name = "Accept-Language", required = false) Locale locale,
+									          @RequestHeader(name = "evidenceid", required = true) Long evidenceid) {
+
+        Users user = (Users) request.getAttribute("user");
+		return adminService.fileslist(locale, evidenceid, user);
+	}
+	
+
+	@RequestMapping(value = "/project/files/upload", method = RequestMethod.POST)
+    public ResponseEntity<?> uploadfiles(HttpServletRequest request, 
+			  							@RequestHeader(name = "Accept-Language", required = false) Locale locale,
+										@RequestHeader(name = "evidenceid", required = false) Long evidenceid,
+										@RequestHeader(name = "goalid", required = false) String goalid,
+										@RequestParam("file") MultipartFile[] files) {
+ 
+        Users user = (Users) request.getAttribute("user");
+        return adminService.uploadfiles(locale, user, files, evidenceid, goalid);
+    }
+
+	@RequestMapping(value = "/project/file/remove/{id}", method = RequestMethod.POST)
+	public ResponseEntity<?> fileremove(HttpServletRequest request,
+											  @RequestHeader(name = "Accept-Language", required = false) Locale locale,
+											  @PathVariable(name = "id", required = true) Long id) {
+
+        Users user = (Users) request.getAttribute("user");
+		return adminService.removefile(locale, id, user);
+	}
 }

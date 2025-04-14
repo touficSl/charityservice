@@ -5,6 +5,7 @@ import java.util.Locale;
 import org.springframework.http.ResponseEntity;
 
 import com.service.charity.builder.request.DonateRq;
+import com.service.charity.builder.request.ProjectListRequest;
 import com.service.charity.model.Users;
 
 public interface UserService {
@@ -14,4 +15,12 @@ public interface UserService {
 
 	ResponseEntity<?> donate(Locale locale, Users user, DonateRq rq);
 
+	ResponseEntity<?> projectlist(Locale locale, ProjectListRequest request);
+
+	ResponseEntity<?> projectdetails(Locale locale, Long id);
+
+	ResponseEntity<?> downloadfile(String fileName);
+	
+	ResponseEntity<?> returnbase64file(String fileName);
+	
 }

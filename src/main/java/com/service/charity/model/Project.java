@@ -4,11 +4,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonFormat;
-
-import com.service.charity.config.Constants;import com.fasterxml.jackson.annotation.JsonFormat;
-
-import com.service.charity.config.Constants;import com.service.charity.builder.request.ProjectRq;
+import com.service.charity.builder.request.ProjectRq;
 import com.service.charity.config.Constants;
 
 import jakarta.persistence.Column;

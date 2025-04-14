@@ -23,4 +23,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 	
 	@Query("SELECT COUNT(c) FROM Project c")
 	Long getTotalProjects();
+	
+	Page<Project> findByTitleContainingIgnoreCase(String title, Pageable pageable);
+
 }
