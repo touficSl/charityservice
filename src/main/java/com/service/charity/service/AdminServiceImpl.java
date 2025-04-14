@@ -59,7 +59,7 @@ public class AdminServiceImpl implements AdminService {
 	@Value("${spring.file.accessurl}") 
     private String fileaccessurl;
 
-	@Value("${spring.file.filetrashdir}") 
+	@Value("${spring.file.trash.dir}") 
     private String filetrashdir;
 	
 	@Override
