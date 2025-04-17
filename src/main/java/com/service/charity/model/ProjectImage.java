@@ -24,9 +24,9 @@ public class ProjectImage {
 
     @Column(nullable = false, columnDefinition = "LONGTEXT")
     private String path;
-
-    @Column(name = "order")
-    private Integer order;
+    
+    @Column(name = "`order`") // Maps to the DB column named `order`
+    private Integer sortOrder; // Java field can be anything you want
 
     @Column(name = "date_time", nullable = false, updatable = false, insertable = false, columnDefinition = "Date DEFAULT CURRENT_Date")
     private Date dateTime;
@@ -47,8 +47,8 @@ public class ProjectImage {
     public String getPath() { return path; }
     public void setPath(String path) { this.path = path; }
 
-    public Integer getOrder() { return order; }
-    public void setOrder(Integer order) { this.order = order; }
+    public Integer getOrder() { return sortOrder; }
+    public void setOrder(Integer order) { this.sortOrder = order; }
 
     public Date getDateTime() { return dateTime; }
     public void setDateTime(Date dateTime) { this.dateTime = dateTime; }

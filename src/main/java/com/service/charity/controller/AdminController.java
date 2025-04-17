@@ -65,6 +65,18 @@ public class AdminController {
 		return adminService.projectsave(locale, user, rq);
 	} 
 	
+	@RequestMapping(value = {"/project/remove", "/{version}/project/save"}, 
+			method = RequestMethod.POST, headers = "Accept=application/json") 
+	public ResponseEntity<?> projectremove(
+			@RequestHeader(name = "Accept-Language", required = false) Locale locale,
+			HttpServletRequest request, 
+			@PathVariable(name = "version", required = false) String version,
+		  @RequestHeader(name = "id", required = true) Long id) throws UnsupportedEncodingException { 
+
+		Users user = (Users) request.getAttribute("user");
+		return adminService.projectremove(locale, user, id);
+	} 
+	
 	@RequestMapping(value = "/charity/list", method = RequestMethod.POST)
 	public ResponseEntity<?> charitylist(@RequestHeader(name = "Accept-Language", required = false) Locale locale,
 			  					  @RequestHeader(name = "projectid", required = true, defaultValue = "0") Long projectId,
@@ -92,22 +104,21 @@ public class AdminController {
 	@RequestMapping(value = "/project/files/list", method = RequestMethod.POST)
 	public ResponseEntity<?> fileslist(HttpServletRequest request,
 											  @RequestHeader(name = "Accept-Language", required = false) Locale locale,
-									          @RequestHeader(name = "evidenceid", required = true) Long evidenceid) {
+									          @RequestHeader(name = "projectid", required = true) Long projectid) {
 
         Users user = (Users) request.getAttribute("user");
-		return adminService.fileslist(locale, evidenceid, user);
+		return adminService.fileslist(locale, projectid, user);
 	}
 	
 
 	@RequestMapping(value = "/project/files/upload", method = RequestMethod.POST)
     public ResponseEntity<?> uploadfiles(HttpServletRequest request, 
 			  							@RequestHeader(name = "Accept-Language", required = false) Locale locale,
-										@RequestHeader(name = "evidenceid", required = false) Long evidenceid,
-										@RequestHeader(name = "goalid", required = false) String goalid,
+										@RequestHeader(name = "projectid", required = true) Long projectid,
 										@RequestParam("file") MultipartFile[] files) {
  
         Users user = (Users) request.getAttribute("user");
-        return adminService.uploadfiles(locale, user, files, evidenceid, goalid);
+        return adminService.uploadfiles(locale, user, files, projectid);
     }
 
 	@RequestMapping(value = "/project/file/remove/{id}", method = RequestMethod.POST)

@@ -1,5 +1,6 @@
 package com.service.charity.service;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -95,7 +96,7 @@ public class AdminServiceImpl implements AdminService {
 	public ResponseEntity<?> projectsave(Locale locale, Users user, ProjectRq rq) {
 		try {
 
-			if (rq.getId() != null) {
+			if (rq.getId() != null && rq.getId() > 0) {
 				Optional<Project> projectopt = projectRepository.findById(rq.getId());
 				if (!projectopt.isPresent())
 					return ResponseEntity.ok(new MessageResponse(messageService.getMessage("not_found", locale), 122));
@@ -110,7 +111,7 @@ public class AdminServiceImpl implements AdminService {
 			return ResponseEntity.ok(Project);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return ResponseEntity.ok(new MessageResponse(messageService.getMessage("exception_case", locale), 111));
+			return ResponseEntity.ok(new MessageResponse(messageService.getMessage("exception_case", locale) + "  > " + e.getMessage(), 111));
 		}
 	}
 
@@ -169,7 +170,7 @@ public class AdminServiceImpl implements AdminService {
 	
 
 	@Override
-	public ResponseEntity<?> uploadfiles(Locale locale, Users user, MultipartFile[] files, Long projectid, String goalid) {
+	public ResponseEntity<?> uploadfiles(Locale locale, Users user, MultipartFile[] files, Long projectid) {
 
 		try {
 	        Project project = null;
@@ -190,13 +191,13 @@ public class AdminServiceImpl implements AdminService {
         	return ResponseEntity.ok(savedfiles);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return ResponseEntity.ok(new MessageResponse(messageService.getMessage("exception_case", locale), 111));
+			return ResponseEntity.ok(new MessageResponse(messageService.getMessage("exception_case", locale) + " > " + e.getMessage(), 111));
 		}
     }
 	
-	private ProjectImage savefile(Users user, MultipartFile file, Project project) {
+	private ProjectImage savefile(Users user, MultipartFile file, Project project) throws IOException {
 
-		try {
+//		try {
 	        
             String originalFilename = file.getOriginalFilename();
             String fileName = Utils.generateUniqueString(Constants.PROJECT_KEY) + originalFilename;
@@ -205,6 +206,7 @@ public class AdminServiceImpl implements AdminService {
             ProjectImage metadata = new ProjectImage();
             metadata.setName(fileName);
             metadata.setPath(endpoint + fileaccessurl + fileName);
+            metadata.setUrl(metadata.getPath());
             metadata.setDateTime(new Date());
             metadata.setProject(project);
             metadata = projectImageRepository.save(metadata);
@@ -217,10 +219,10 @@ public class AdminServiceImpl implements AdminService {
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 	
 	        return metadata;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			return null;
+//		}
 	}
 	public static void checkAndCreateDirectory(String filePath){
 		try {
@@ -276,6 +278,24 @@ public class AdminServiceImpl implements AdminService {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public ResponseEntity<?> projectremove(Locale locale, Users user, Long id) {
+
+		Optional<Project> projectopt = projectRepository.findById(id);
+		if (!projectopt.isPresent())
+			return ResponseEntity.ok(new MessageResponse(messageService.getMessage("not_found", locale), 122));
+		Project existingproject = projectopt.get();
+		
+		List<Charity> list = charityRepository.findByProjectId(id);
+		if (list != null && list.size() > 0)
+			return ResponseEntity.ok(new MessageResponse(messageService.getMessage("charity_exist", locale), 144));
+
+		projectRepository.delete(existingproject);
+
+		return ResponseEntity.ok(new MessageResponse(messageService.getMessage("success", locale)));
+
 	}
 
 }

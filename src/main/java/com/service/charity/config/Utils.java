@@ -1,5 +1,7 @@
 package com.service.charity.config;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -76,6 +78,17 @@ public class Utils {
             e.printStackTrace();
         }
         return null;
+    }
+    
+
+    public static BigDecimal convertToBigDecimal(String value) {
+        try {
+            BigDecimal decimal = new BigDecimal(value);
+            return decimal.setScale(2, RoundingMode.HALF_UP); // Round to 2 decimal places
+        } catch (NumberFormatException e) {
+            System.err.println("Invalid decimal string: " + value);
+            return BigDecimal.ZERO; // or handle it however you prefer
+        }
     }
     
     public static Date addMonthsToDate(Date date, int months) {

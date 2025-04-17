@@ -6,6 +6,7 @@ import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.service.charity.builder.request.ProjectRq;
 import com.service.charity.config.Constants;
+import com.service.charity.config.Utils;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -64,10 +65,10 @@ public class Project {
 		this.reference = rq.getReference();
 		this.title = rq.getTitle();
 		this.description = rq.getDescription();
-		this.estimationTime = rq.getEstimationTime();
-		this.cost = rq.getCost();
-		this.totalCharityAmount = rq.getTotalCharityAmount();
-		this.dateTime = rq.getDateTime();
+		this.estimationTime = Utils.convertStringToDate(rq.getEstimationTime(), null);
+		this.cost = Utils.convertToBigDecimal(rq.getCost());
+		this.totalCharityAmount = this.totalCharityAmount != null && this.totalCharityAmount.compareTo(BigDecimal.ZERO) > 0 ? totalCharityAmount : BigDecimal.ZERO;
+		this.dateTime = new Date();
 		this.type = rq.getType();
 		this.status = rq.getStatus();
 		this.enable = true;

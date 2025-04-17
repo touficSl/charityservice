@@ -42,4 +42,7 @@ public interface CharityRepository extends JpaRepository<Charity, Long> {
 	@Query("SELECT c.project AS project, SUM(c.amount) AS totalAmount FROM Charity c WHERE c.username = :username GROUP BY c.project")
 	List<ProjectCharityAmount> getTotalCharitiesAmountPerProjectByUsername(@Param("username") String username);
 
+	@Query("SELECT c FROM Charity c WHERE c.project.id = :id")
+	List<Charity> findByProjectId(@Param("id") Long id);
+
 }

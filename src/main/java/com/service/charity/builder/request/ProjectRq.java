@@ -1,8 +1,5 @@
 package com.service.charity.builder.request;
 
-import java.math.BigDecimal;
-import java.util.Date;
-
 public class ProjectRq {
 
     private Long id;
@@ -13,13 +10,9 @@ public class ProjectRq {
 
     private String description;
 
-    private Date estimationTime;
+    private String estimationTime;
 
-    private BigDecimal cost;
-
-    private BigDecimal totalCharityAmount;
-
-    private Date dateTime;
+    private String cost;
 
     private String type;
 
@@ -40,17 +33,11 @@ public class ProjectRq {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public Date getEstimationTime() { return estimationTime; }
-    public void setEstimationTime(Date estimationTime) { this.estimationTime = estimationTime; }
+    public String getEstimationTime() { return estimationTime; }
+    public void setEstimationTime(String estimationTime) { this.estimationTime = estimationTime; }
 
-    public BigDecimal getCost() { return cost; }
-    public void setCost(BigDecimal cost) { this.cost = cost; }
-
-    public BigDecimal getTotalCharityAmount() { return totalCharityAmount; }
-    public void setTotalCharityAmount(BigDecimal totalCharityAmount) { this.totalCharityAmount = totalCharityAmount; }
-
-    public Date getDateTime() { return dateTime; }
-    public void setDateTime(Date dateTime) { this.dateTime = dateTime; }
+    public String getCost() { return cost; }
+    public void setCost(String cost) { this.cost = cost; }
 
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }

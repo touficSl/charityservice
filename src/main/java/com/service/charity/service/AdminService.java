@@ -19,10 +19,12 @@ public interface AdminService {
 			String sortcolumn, Boolean descending, Integer draw, String username, Long projectId);
 	
 
-	ResponseEntity<?> fileslist(Locale locale, Long evidenceid, Users user);
+	ResponseEntity<?> fileslist(Locale locale, Long projectid, Users user);
 
-	ResponseEntity<?> uploadfiles(Locale locale, Users user, MultipartFile[] files, Long evidenceid, String goalid);
+	ResponseEntity<?> uploadfiles(Locale locale, Users user, MultipartFile[] files, Long projectid);
 
 	ResponseEntity<?> removefile(Locale locale, Long id, Users user);
+
+	ResponseEntity<?> projectremove(Locale locale, Users user, Long id);
 
 }
