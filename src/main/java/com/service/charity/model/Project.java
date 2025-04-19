@@ -58,7 +58,7 @@ public class Project {
     private Boolean enable;
 
     @Transient
-    private List<ProjectImage> images;
+    private List<String> images;
     
     public Project() {
 		super();
@@ -71,7 +71,7 @@ public class Project {
 		this.reference = rq.getReference();
 		this.title = rq.getTitle();
 		this.description = rq.getDescription();
-		this.estimationTime = Utils.convertStringToDate(rq.getEstimationTime(), null);
+		this.estimationTime = Utils.convertStringToDate(rq.getEstimationTime(), Constants.DATE_FORMAT);
 		this.cost = Utils.convertToBigDecimal(rq.getCost());
 		this.totalCharityAmount = this.totalCharityAmount != null && this.totalCharityAmount.compareTo(BigDecimal.ZERO) > 0 ? totalCharityAmount : BigDecimal.ZERO;
 		this.dateTime = new Date();
@@ -114,11 +114,11 @@ public class Project {
     public Boolean getEnable() { return enable; }
     public void setEnable(Boolean enable) { this.enable = enable; }
 
-	public List<ProjectImage> getImages() {
+	public List<String> getImages() {
 		return images;
 	}
 
-	public void setImages(List<ProjectImage> images) {
+	public void setImages(List<String> images) {
 		this.images = images;
 	}
 }

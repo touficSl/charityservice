@@ -2,6 +2,9 @@ package com.service.charity.model;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.service.charity.config.Constants;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -28,6 +31,7 @@ public class ProjectImage {
     @Column(name = "`order`") // Maps to the DB column named `order`
     private Integer sortOrder; // Java field can be anything you want
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATETIME_FORMAT)
     @Column(name = "date_time", nullable = false, updatable = false, insertable = false, columnDefinition = "Date DEFAULT CURRENT_Date")
     private Date dateTime;
 

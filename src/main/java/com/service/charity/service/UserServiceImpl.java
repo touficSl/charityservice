@@ -123,7 +123,11 @@ public class UserServiceImpl implements UserService {
 	        
 	        for (Project project : projectPage.getContent()) {
 				List<ProjectImage> images = projectImageRepository.findByProjectId(project.getId());
-				project.setImages(images);
+				List<String> imagelist = new ArrayList<String>();
+				if (images != null && images.size() > 0)
+					for (ProjectImage pi : images)
+						imagelist.add(pi.getPath());
+				project.setImages(imagelist);
 	        }
 			
 	        Map<String, Object> response = new HashMap();
@@ -147,7 +151,11 @@ public class UserServiceImpl implements UserService {
 			
 			Project project = projectopt.get();
 			List<ProjectImage> images = projectImageRepository.findByProjectId(project.getId());
-			project.setImages(images);
+			List<String> imagelist = new ArrayList<String>();
+			if (images != null && images.size() > 0)
+				for (ProjectImage pi : images)
+					imagelist.add(pi.getPath());
+			project.setImages(imagelist);
 			return ResponseEntity.ok(project);
 		} catch (Exception e) {
 			e.printStackTrace();
