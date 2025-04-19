@@ -2,6 +2,7 @@ package com.service.charity.model;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.service.charity.builder.request.ProjectRq;
@@ -14,6 +15,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 @Entity
 @Table(name = "projects")
@@ -54,6 +56,9 @@ public class Project {
 
     @Column(columnDefinition = "BIT(1) DEFAULT b'1'")
     private Boolean enable;
+
+    @Transient
+    private List<ProjectImage> images;
     
     public Project() {
 		super();
@@ -108,4 +113,12 @@ public class Project {
 
     public Boolean getEnable() { return enable; }
     public void setEnable(Boolean enable) { this.enable = enable; }
+
+	public List<ProjectImage> getImages() {
+		return images;
+	}
+
+	public void setImages(List<ProjectImage> images) {
+		this.images = images;
+	}
 }

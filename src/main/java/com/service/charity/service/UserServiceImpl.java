@@ -31,6 +31,7 @@ import com.service.charity.builder.response.DatatableResponse;
 import com.service.charity.builder.response.MessageResponse;
 import com.service.charity.model.Charity;
 import com.service.charity.model.Project;
+import com.service.charity.model.ProjectImage;
 import com.service.charity.model.Users;
 import com.service.charity.reposiroty.CharityRepository;
 import com.service.charity.reposiroty.ProjectImageRepository;
@@ -119,7 +120,12 @@ public class UserServiceImpl implements UserService {
 	        } else {
 	            projectPage = projectRepository.findAll(pageable);
 	        }
-
+	        
+	        for (Project project : projectPage.getContent()) {
+				List<ProjectImage> images = projectImageRepository.findByProjectId(project.getId());
+				project.setImages(images);
+	        }
+			
 	        Map<String, Object> response = new HashMap();
 	        response.put("projectList", projectPage.getContent());
 	        response.put("totalElements", projectPage.getTotalElements());
@@ -139,7 +145,10 @@ public class UserServiceImpl implements UserService {
 			if (!projectopt.isPresent()) 
 				return ResponseEntity.ok(new MessageResponse(messageService.getMessage("not_found", locale), 122));
 			
-			return ResponseEntity.ok(projectopt.get());
+			Project project = projectopt.get();
+			List<ProjectImage> images = projectImageRepository.findByProjectId(project.getId());
+			project.setImages(images);
+			return ResponseEntity.ok(project);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return ResponseEntity.ok(new MessageResponse(messageService.getMessage("exception_case", locale), 111));
