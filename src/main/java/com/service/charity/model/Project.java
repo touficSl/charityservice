@@ -32,6 +32,7 @@ public class Project {
     @Column(nullable = false, columnDefinition = "LONGTEXT")
     private String description;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATE_FORMAT)
     @Column(name = "estimation_time")
     private Date estimationTime;
 
