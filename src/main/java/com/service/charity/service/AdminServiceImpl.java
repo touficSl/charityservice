@@ -209,6 +209,7 @@ public class AdminServiceImpl implements AdminService {
             metadata.setUrl(metadata.getPath());
             metadata.setDateTime(new Date());
             metadata.setProject(project);
+            metadata.setOrder(0);
             metadata = projectImageRepository.save(metadata);
             
             checkAndCreateDirectory(fileuploaddir);
