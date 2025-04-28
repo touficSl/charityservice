@@ -56,15 +56,9 @@ public class PublicController {
 		return userService.projectdetails(locale, id);
 	}
 
-	@PostMapping("/create-checkout-session")
+	@PostMapping("/checkout/session")
 	public ResponseEntity<Map<String, Object>> createCheckoutSession() throws StripeException {
 		Stripe.apiKey = "sk_test_51RDsi2RofurYzY0n2KhoNXAvbphdtUHQ9LwzyOzEWVjvi5E8pAm7sE2QMutpJMr3k0f9FktaKu2aL7uGubTxaDge00A3e35lz4"; // Replace
-																																		// with
-																																		// your
-																																		// Stripe
-																																		// test
-																																		// secret
-																																		// key
 
 		List<SessionCreateParams.LineItem> lineItems = List.of(SessionCreateParams.LineItem.builder().setQuantity(1L)
 				.setPriceData(SessionCreateParams.LineItem.PriceData.builder().setCurrency("usd").setUnitAmount(2000L) // $20.00
@@ -184,4 +178,14 @@ public class PublicController {
 	    return ResponseEntity.ok("Webhook received");
 	}
 
+	
+	private boolean registeruser() {
+		// save checkout details
+		// register user after payment
+		// send email to user email to thank him for his donation
+		// allow user to set his account password to see his donations that he did on the projects
+		// 	redirect user to otp change password page he enters the otp from his email and change his password
+		// save donation amount and update total project donation amount
+		return true;
+	}
 }
