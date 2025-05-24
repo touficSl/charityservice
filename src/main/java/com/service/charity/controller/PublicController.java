@@ -29,6 +29,7 @@ import com.service.charity.service.UserService;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
+import com.stripe.model.EventDataObjectDeserializer;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import com.stripe.param.checkout.SessionCreateParams;
@@ -78,8 +79,8 @@ public class PublicController {
 
 		SessionCreateParams params = SessionCreateParams.builder().addAllLineItem(lineItems)
 				.setMode(SessionCreateParams.Mode.PAYMENT)
-				.setSuccessUrl("http://http://mission.westeurope.cloudapp.azure.com/successpayment?session_id={CHECKOUT_SESSION_ID}")
-				.setCancelUrl("http://http://mission.westeurope.cloudapp.azure.com/cancelpayment").putMetadata("order_id", "productid_12345") // 👈 attach your internal
+				.setSuccessUrl("http://mission.westeurope.cloudapp.azure.com/public/successpayment?session_id={CHECKOUT_SESSION_ID}")
+				.setCancelUrl("http://mission.westeurope.cloudapp.azure.com/public/cancelpayment").putMetadata("order_id", "productid_12345") // 👈 attach your internal
 																							// order ID
 				.build();
 
@@ -94,28 +95,41 @@ public class PublicController {
 	@PostMapping("/webhook")
 	public ResponseEntity<String> handleWebhook(HttpServletRequest request) throws IOException {
 		String payload = new String(request.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-		String sigHeader = request.getHeader("Stripe-Signature");
-		String endpointSecret = "whsec_YMBsc2t23Xxz51AY5dviFUlp6wzv6AlY"; // Your webhook secret
+	    String sigHeader = request.getHeader("Stripe-Signature");
+	    String endpointSecret = "whsec_YMBsc2t23Xxz51AY5dviFUlp6wzv6AlY";
 
-		Event event;
-		try {
-			event = Webhook.constructEvent(payload, sigHeader, endpointSecret);
-		} catch (Exception e) {
-			return ResponseEntity.status(400).body("");
-		}
+	    Event event;
 
-		if ("checkout.session.completed".equals(event.getType())) {
-			Session session = (Session) event.getDataObjectDeserializer().getObject().get();
-			// Fulfill order
-			System.out.println("Payment successful for session: " + session.getId());
+	    try {
+	        event = Webhook.constructEvent(payload, sigHeader, endpointSecret);
+	    } catch (Exception e) {
+	        System.out.println("Webhook error: " + e.getMessage());
+	        return ResponseEntity.status(400).body("Invalid signature");
+	    }
 
-			String orderId = session.getMetadata().get("order_id");
-			System.out.println("order_id>>>>>>>>>: " + orderId);
-			return ResponseEntity.ok(orderId);
+	    switch (event.getType()) {
+	        case "checkout.session.completed":
+	            EventDataObjectDeserializer dataObjectDeserializer = event.getDataObjectDeserializer();
 
-		}
+	            if (dataObjectDeserializer.getObject().isPresent()) {
+	                Session session = (Session) dataObjectDeserializer.getObject().get();
 
-		return ResponseEntity.ok("");
+	                System.out.println("Payment successful for session: " + session.getId());
+
+	                String orderId = session.getMetadata() != null ? session.getMetadata().get("order_id") : null;
+	                System.out.println("order_id >>>>>>>>>: " + orderId);
+
+	                return ResponseEntity.ok("Session completed for order: " + orderId);
+	            } else {
+	                System.out.println("Failed to deserialize session object");
+	            }
+	            break;
+
+	        default:
+	            System.out.println("Unhandled event type: " + event.getType());
+	    }
+
+	    return ResponseEntity.ok("");
 	}
 
 	@RequestMapping(value = "/project/download/file/{fileName}", method = RequestMethod.GET)
