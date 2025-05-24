@@ -58,19 +58,28 @@ public class PublicController {
 
 	@PostMapping("/checkout/session")
 	public ResponseEntity<Map<String, Object>> createCheckoutSession() throws StripeException {
-		Stripe.apiKey = "sk_test_51RDsi2RofurYzY0n2KhoNXAvbphdtUHQ9LwzyOzEWVjvi5E8pAm7sE2QMutpJMr3k0f9FktaKu2aL7uGubTxaDge00A3e35lz4"; // Replace
+		Stripe.apiKey = "sk_test_51RQCR8R68I1yevpeqgncFrK242495lQJZEFZU3wjTQZm9qIyUDMkR1qA0EQPAfsIXe1YQYo9Bm1fYM6QTLL6Jlle00K6I3A2e9"; // Replace
 
-		List<SessionCreateParams.LineItem> lineItems = List.of(SessionCreateParams.LineItem.builder().setQuantity(1L)
-				.setPriceData(SessionCreateParams.LineItem.PriceData.builder().setCurrency("usd").setUnitAmount(2000L) // $20.00
-						.setProductData(SessionCreateParams.LineItem.PriceData.ProductData.builder()
-								.setName("Test Product").build())
-						.build())
-				.build());
+		
+		String stripeProductId = "prod_SN1TmxeWcLNrrL"; // Or whatever your actual product ID is
+
+		List<SessionCreateParams.LineItem> lineItems = List.of(
+		    SessionCreateParams.LineItem.builder()
+		        .setQuantity(1L)
+		        .setPriceData(
+		            SessionCreateParams.LineItem.PriceData.builder()
+		                .setCurrency("aed")
+		                .setUnitAmount(2000L) // 20.00 AED (2000 fils)
+		                .setProduct(stripeProductId) // Use the Product ID here
+		                .build()
+		        )
+		        .build()
+		);
 
 		SessionCreateParams params = SessionCreateParams.builder().addAllLineItem(lineItems)
 				.setMode(SessionCreateParams.Mode.PAYMENT)
-				.setSuccessUrl("https://localhost/success?session_id={CHECKOUT_SESSION_ID}")
-				.setCancelUrl("https://localhost/cancel").putMetadata("order_id", "12345") // 👈 attach your internal
+				.setSuccessUrl("http://http://mission.westeurope.cloudapp.azure.com/successpayment?session_id={CHECKOUT_SESSION_ID}")
+				.setCancelUrl("http://http://mission.westeurope.cloudapp.azure.com/cancelpayment").putMetadata("order_id", "productid_12345") // 👈 attach your internal
 																							// order ID
 				.build();
 
@@ -86,7 +95,7 @@ public class PublicController {
 	public ResponseEntity<String> handleWebhook(HttpServletRequest request) throws IOException {
 		String payload = new String(request.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
 		String sigHeader = request.getHeader("Stripe-Signature");
-		String endpointSecret = "whsec_XXXXXXXXXXXXXXXX"; // Your webhook secret
+		String endpointSecret = "whsec_YMBsc2t23Xxz51AY5dviFUlp6wzv6AlY"; // Your webhook secret
 
 		Event event;
 		try {
@@ -101,6 +110,7 @@ public class PublicController {
 			System.out.println("Payment successful for session: " + session.getId());
 
 			String orderId = session.getMetadata().get("order_id");
+			System.out.println("order_id>>>>>>>>>: " + orderId);
 			return ResponseEntity.ok(orderId);
 
 		}
