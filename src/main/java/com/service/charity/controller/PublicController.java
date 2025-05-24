@@ -108,7 +108,8 @@ public class PublicController {
 	    }
 
 	    switch (event.getType()) {
-	        case "checkout.session.completed":
+//	        case "checkout.session.completed":
+	        case "payment_intent.succeeded":
 	            EventDataObjectDeserializer dataObjectDeserializer = event.getDataObjectDeserializer();
 
 	            if (dataObjectDeserializer.getObject().isPresent()) {

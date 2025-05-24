@@ -293,6 +293,7 @@ public class AdminServiceImpl implements AdminService {
 		if (list != null && list.size() > 0)
 			return ResponseEntity.ok(new MessageResponse(messageService.getMessage("charity_exist", locale), 144));
 
+		projectImageRepository.deleteByProjectId(existingproject.getId());
 		projectRepository.delete(existingproject);
 
 		return ResponseEntity.ok(new MessageResponse(messageService.getMessage("success", locale)));
