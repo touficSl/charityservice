@@ -1,5 +1,7 @@
 package com.service.charity.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -293,7 +295,7 @@ public class UserServiceImpl implements UserService {
 
 	                if (session.has("amount_total") && session.has("currency")) {
 	                    int amountTotal = session.getInt("amount_total");
-	                    double amount = amountTotal / 100.0;
+	                    BigDecimal amount = BigDecimal.valueOf(amountTotal).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
 
 	                    ps.setStatus(success ? Constants.COMPLETED : Constants.FAILED);
 	                    ps.setAmount(amount);

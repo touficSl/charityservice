@@ -1,6 +1,7 @@
 package com.service.charity.controller;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
@@ -61,6 +62,8 @@ public class PublicController {
 	AuthService authService;
 
     private static final String ENDPOINT_SECRET = "whsec_YMBsc2t23Xxz51AY5dviFUlp6wzv6AlY";
+    private static final String stripeProductId = "prod_SN1TmxeWcLNrrL";
+    private static final String stripeapikey = "sk_test_51RQCR8R68I1yevpeqgncFrK242495lQJZEFZU3wjTQZm9qIyUDMkR1qA0EQPAfsIXe1YQYo9Bm1fYM6QTLL6Jlle00K6I3A2e9";
 
 	@RequestMapping(value = { "/project/list", "/{version}/project/list" }, method = RequestMethod.POST)
 	public ResponseEntity<?> projectlist(@RequestBody ProjectListRequest request,
@@ -91,30 +94,30 @@ public class PublicController {
 //			return verifycaptcha;
 
 		boolean isregisteruser = true;
-		ResponseEntity<?> auth = authService.callAuth(apikey, apisecret, username, token, Constants.DONOTCHECKME, locale.getLanguage());
-
-		if (auth != null && auth.getBody() instanceof Users) { // success
-			isregisteruser = false;
-			Users user = (Users) auth.getBody();
-	        rq.setUsername(user.getUsername());
-		}
-		else {
-			// invalid token
-			return auth;
+		if (token != null) {
+			ResponseEntity<?> auth = authService.callAuth(apikey, apisecret, username, token, Constants.DONOTCHECKME, locale.getLanguage());
+	
+			if (auth != null && auth.getBody() instanceof Users) { // success
+				isregisteruser = false;
+				Users user = (Users) auth.getBody();
+		        rq.setUsername(user.getUsername());
+			}
+			else {
+				// invalid token
+				return auth;
+			}
 		}
 		
-		Stripe.apiKey = "sk_test_51RQCR8R68I1yevpeqgncFrK242495lQJZEFZU3wjTQZm9qIyUDMkR1qA0EQPAfsIXe1YQYo9Bm1fYM6QTLL6Jlle00K6I3A2e9"; // Replace
+		Stripe.apiKey = stripeapikey; 
 
-		
-		String stripeProductId = "prod_SN1TmxeWcLNrrL"; // Or whatever your actual product ID is
-
+		long amountInCents = rq.getAmount().multiply(BigDecimal.valueOf(100)).longValue();
 		List<SessionCreateParams.LineItem> lineItems = List.of(
 		    SessionCreateParams.LineItem.builder()
 		        .setQuantity(1L)
 		        .setPriceData(
 		            SessionCreateParams.LineItem.PriceData.builder()
-		                .setCurrency("aed")
-		                .setUnitAmount(2000L) // 20.00 AED (2000 fils)
+		                .setCurrency(Constants.CURRENCY)
+		                .setUnitAmount(amountInCents) // (in fils)
 		                .setProduct(stripeProductId) // Use the Product ID here
 		                .build()
 		        )

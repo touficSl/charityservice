@@ -1,5 +1,6 @@
 package com.service.charity.model;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import jakarta.persistence.Column;
@@ -37,7 +38,7 @@ public class PaymentSession {
     private String thirdpartyerror;
     
     @Column(name = "amount")
-    private Double amount; 
+    private BigDecimal amount; 
 
     @Column(name = "projectid", nullable = false)
     private Long projectid;
@@ -105,11 +106,11 @@ public class PaymentSession {
 		this.thirdpartystatus = thirdpartystatus;
 	}
 
-	public Double getAmount() {
+	public BigDecimal getAmount() {
 		return amount;
 	}
 
-	public void setAmount(Double amount) {
+	public void setAmount(BigDecimal amount) {
 		this.amount = amount;
 	}
 

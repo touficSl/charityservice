@@ -1,5 +1,6 @@
 package com.service.charity.builder.request;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -12,7 +13,7 @@ public class DonateRq {
     @JsonDeserialize(using = SanitizedStringDeserializer.class)
     private String username;
 
-    private Double amount;
+    private BigDecimal amount;
 
     @JsonDeserialize(using = SanitizedStringDeserializer.class)
     private String paymentReference;
@@ -26,8 +27,8 @@ public class DonateRq {
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
 
-    public Double getAmount() { return amount; }
-    public void setAmount(Double amount) { this.amount = amount; }
+    public BigDecimal getAmount() { return amount; }
+    public void setAmount(BigDecimal amount) { this.amount = amount; }
 
     public String getPaymentReference() { return paymentReference; }
     public void setPaymentReference(String paymentReference) { this.paymentReference = paymentReference; }

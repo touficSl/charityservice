@@ -1,5 +1,6 @@
 package com.service.charity.model;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -31,7 +32,7 @@ public class Charity {
     private String username;
 
     @Column(nullable = false, precision = 10, scale = 2)
-    private Double amount;
+    private BigDecimal amount;
 
     @Column(nullable = false, unique = true, length = 20)
     private String paymentReference;
@@ -65,8 +66,8 @@ public class Charity {
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
 
-    public Double getAmount() { return amount; }
-    public void setAmount(Double amount) { this.amount = amount; }
+    public BigDecimal getAmount() { return amount; }
+    public void setAmount(BigDecimal amount) { this.amount = amount; }
 
     public String getPaymentReference() { return paymentReference; }
     public void setPaymentReference(String paymentReference) { this.paymentReference = paymentReference; }

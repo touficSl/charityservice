@@ -1,10 +1,12 @@
 package com.service.charity.builder.request;
 
+import java.math.BigDecimal;
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.service.charity.config.SanitizedStringDeserializer;
 
 public class CheckoutRq {
-	private Double amount;
+	private BigDecimal amount;
     @JsonDeserialize(using = SanitizedStringDeserializer.class)
 	private String name;
     @JsonDeserialize(using = SanitizedStringDeserializer.class)
@@ -15,10 +17,10 @@ public class CheckoutRq {
 	private String captchaToken;
     private Long projectid;
 	
-	public Double getAmount() {
+	public BigDecimal getAmount() {
 		return amount;
 	}
-	public void setAmount(Double amount) {
+	public void setAmount(BigDecimal amount) {
 		this.amount = amount;
 	}
 	public String getName() {
