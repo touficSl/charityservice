@@ -1,16 +1,21 @@
 package com.service.charity.builder.request;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.service.charity.config.Constants;
+import com.service.charity.config.SanitizedStringDeserializer;
 
 public class EmailDetailsRq {
 
+    @JsonDeserialize(using = SanitizedStringDeserializer.class)
 	private String name;
+    @JsonDeserialize(using = SanitizedStringDeserializer.class)
 	private String recipient;
+    @JsonDeserialize(using = SanitizedStringDeserializer.class)
 	private String msgBody;
+    @JsonDeserialize(using = SanitizedStringDeserializer.class)
 	private String subject;
+    @JsonDeserialize(using = SanitizedStringDeserializer.class)
 	private String captchaToken;
-	
-	private boolean useAccela;
 	
 	public EmailDetailsRq() {
 		super();
@@ -38,12 +43,6 @@ public class EmailDetailsRq {
 	}
 	public void setCaptchaToken(String captchaToken) {
 		this.captchaToken = captchaToken;
-	}
-	public boolean isUseAccela() {
-		return useAccela;
-	}
-	public void setUseAccela(boolean useAccela) {
-		this.useAccela = useAccela;
 	}
 	public String getName() {
 		return name;

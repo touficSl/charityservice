@@ -148,3 +148,12 @@ UNLOCK TABLES;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2025-04-19 18:45:16
+
+CREATE TABLE `charity`.`paymentsessions` (
+  `id` VARCHAR(450) NOT NULL,
+  `username` VARCHAR(1000) NULL,
+  `name` VARCHAR(450) NULL,
+  `message` TEXT NULL,
+  `status` VARCHAR(450) NULL,
+  `datetime` DATE NULL,
+  PRIMARY KEY (`id`));

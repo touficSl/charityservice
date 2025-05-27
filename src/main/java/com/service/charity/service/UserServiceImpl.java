@@ -5,12 +5,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -25,15 +28,19 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.service.charity.builder.request.CheckoutRq;
 import com.service.charity.builder.request.DonateRq;
 import com.service.charity.builder.request.ProjectListRequest;
 import com.service.charity.builder.response.DatatableResponse;
 import com.service.charity.builder.response.MessageResponse;
+import com.service.charity.config.Constants;
 import com.service.charity.model.Charity;
+import com.service.charity.model.PaymentSession;
 import com.service.charity.model.Project;
 import com.service.charity.model.ProjectImage;
 import com.service.charity.model.Users;
 import com.service.charity.reposiroty.CharityRepository;
+import com.service.charity.reposiroty.PaymentSessionRepository;
 import com.service.charity.reposiroty.ProjectImageRepository;
 import com.service.charity.reposiroty.ProjectRepository;
 
@@ -52,6 +59,9 @@ public class UserServiceImpl implements UserService {
 	
 	@Autowired
 	ProjectImageRepository projectImageRepository;
+	
+	@Autowired
+	PaymentSessionRepository paymentSessionRepository;
 
 	@Value("${spring.file.uploaddir}") 
     private String fileuploaddir;
@@ -223,6 +233,124 @@ public class UserServiceImpl implements UserService {
 			e.printStackTrace();
 			return ResponseEntity.ok(new MessageResponse("exception_case", 111));
 		}
+	}
+
+	@Override
+	public PaymentSession handlepaymentsession(String token, CheckoutRq rq, boolean isregisteruser) {
+
+		try {
+	        // Create and populate PaymentSession
+	        PaymentSession session = new PaymentSession();
+	        session.setId(UUID.randomUUID().toString()); // Generate unique ID
+	        session.setUsername(rq.getUsername());
+	        session.setName(rq.getName());
+	        session.setMessage(rq.getMessage());
+	        session.setStatus("PENDING"); // Set initial status
+	        session.setDatetime(new Date());
+	        session.setAmount(rq.getAmount());
+	        session.setProjectid(rq.getProjectid());
+	        session.setRegisteruser(isregisteruser);
+	
+	        // Save to database
+	        paymentSessionRepository.save(session);
+	
+	        // Optional: log or trigger payment URL logic
+	        System.out.println("Payment session saved: " + session.getId());
+	        
+	        return session;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	@Override
+	public PaymentSession handlepaymentwebhook(JSONObject payload, String eventType) {
+		// save checkout details
+		
+		boolean success = false;
+	    switch (eventType) {
+	        case "checkout.session.completed":
+	        case "payment_intent.succeeded":
+	            success = true;
+	            break;
+	        default:
+	            success = false;
+	    }
+
+	    PaymentSession ps = null;
+	    
+	    JSONObject session = payload.getJSONObject("data").getJSONObject("object");
+	    if (session.has("metadata")) {
+	        JSONObject metadata = session.getJSONObject("metadata");
+	        if (metadata.has("order_id")) {
+	            String psid = metadata.getString(Constants.PSID); 
+	            System.out.println("PaymentIntent succeeded. PS ID: " + psid);
+
+	            Optional<PaymentSession> optionalSession = paymentSessionRepository.findById(psid);
+	            if (optionalSession.isPresent()) {
+	                ps = optionalSession.get();
+
+	                if (session.has("amount_total") && session.has("currency")) {
+	                    int amountTotal = session.getInt("amount_total");
+	                    double amount = amountTotal / 100.0;
+
+	                    ps.setStatus(success ? Constants.COMPLETED : Constants.FAILED);
+	                    ps.setAmount(amount);
+	                } else {
+	                    System.out.println("Missing amount_total or currency in session.");
+	                    ps.setStatus("FAILED");
+	                }
+	                
+	                String errorCode = null;
+	                String errorMessage = null;
+	                if (session.has("last_payment_error")) {
+	                    JSONObject error = session.getJSONObject("last_payment_error");
+	                    errorCode = error.optString("code");
+	                    errorMessage = error.optString("message");
+	                    System.out.println("Payment Error - Code: " + errorCode + ", Message: " + errorMessage);
+	                    ps.setThirdpartyerror(errorCode + " | " + errorMessage);
+	                }
+	                
+	                ps.setThirdpartystatus(eventType);
+	                ps = paymentSessionRepository.save(ps);
+	            } else {
+	                System.out.println("PaymentSession not found with ID: " + psid);
+	            }
+	        } else {
+	            System.out.println("No psid in metadata.");
+	        }
+	    } else {
+	        System.out.println("No metadata found in payment intent.");
+	        return null;
+	    }
+
+		// save donation amount and update total project donation amount
+	    if (success) {
+            // You may need to determine the project logic from username, metadata, or another field
+            Optional<Project> project = projectRepository.findById(ps.getProjectid()); 
+            if (project.isPresent()) {
+                Charity charity = new Charity();
+                charity.setAmount(ps.getAmount());
+                charity.setUsername(ps.getUsername());
+                charity.setPaymentReference(ps.getId());
+                charity.setPaymentStatus(ps.getStatus());
+                charity.setProject(project.get());
+                charityRepository.save(charity);
+            }
+            
+            if (ps.isRegisteruser()) {
+            	// TODO
+        		// register user after payment
+            	// call auth to register a user and send email to reset his password (use ps data)
+        		// allow user to set his account password to see his donations that he did on the projects
+        		// redirect user to otp change password page he enters the otp from his email and change his password
+            }
+
+        	// TODO
+    		// send email to username = email to thank him for his donation
+        }
+		return ps;
 	}
 	
 }

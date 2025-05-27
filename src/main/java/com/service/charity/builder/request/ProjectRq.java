@@ -1,21 +1,31 @@
 package com.service.charity.builder.request;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.service.charity.config.SanitizedStringDeserializer;
+
 public class ProjectRq {
 
     private Long id;
 
+    @JsonDeserialize(using = SanitizedStringDeserializer.class)
     private String reference;
 
+    @JsonDeserialize(using = SanitizedStringDeserializer.class)
     private String title;
 
+    @JsonDeserialize(using = SanitizedStringDeserializer.class)
     private String description;
 
+    @JsonDeserialize(using = SanitizedStringDeserializer.class)
     private String estimationTime;
 
+    @JsonDeserialize(using = SanitizedStringDeserializer.class)
     private String cost;
 
+    @JsonDeserialize(using = SanitizedStringDeserializer.class)
     private String type;
 
+    @JsonDeserialize(using = SanitizedStringDeserializer.class)
     private String status;
 
     private Boolean enable;

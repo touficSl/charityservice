@@ -1,9 +1,15 @@
 package com.service.charity.builder.request;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.service.charity.config.SanitizedStringDeserializer;
+
 public class SMSDetailsRq {
 
+    @JsonDeserialize(using = SanitizedStringDeserializer.class)
 	private String recipient;
+    @JsonDeserialize(using = SanitizedStringDeserializer.class)
 	private String msgBody;
+    @JsonDeserialize(using = SanitizedStringDeserializer.class)
 	private String captchaToken;
 	
 	private boolean useAccela;

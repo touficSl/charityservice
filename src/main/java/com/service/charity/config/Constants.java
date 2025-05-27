@@ -30,4 +30,11 @@ public class Constants {
     public static final String SECRET_WORD = "c_P9elRfxvAX6i[T28t#";
 
 	public static final String PROJECT_KEY = "PRJT_";
+
+	public static final String PSID = "psid";
+
+	public static final String COMPLETED = "COMPLETED";
+	public static final String FAILED = "FAILED";
+
+	public static final String DONOTCHECKME = "DONOTCHECKME_2943$@#5^&jDE";
 }

@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.service.charity.builder.response.MessageResponse;
+import com.service.charity.config.Constants;
 import com.service.charity.config.Utils;
 import com.service.charity.model.Users;
 import com.service.charity.rest.call.VerifyAuth;
@@ -49,8 +50,9 @@ public class AuthServiceImpl implements AuthService {
 			Users user = new Users(verifyAuthResponse);
 			
 			//check api authorization
-			if (!Utils.isapiauthorized(url, null, user.getAuthorizedapis()))
-				return new ResponseEntity<MessageResponse>(new MessageResponse("API unauthorized", 312), HttpStatus.OK);
+			if (!url.equals(Constants.DONOTCHECKME))
+				if (!Utils.isapiauthorized(url, null, user.getAuthorizedapis()))
+					return new ResponseEntity<MessageResponse>(new MessageResponse("API unauthorized", 312), HttpStatus.OK);
 			
 			return new ResponseEntity<Users>(user, HttpStatus.OK);
 		} catch (Exception e) {

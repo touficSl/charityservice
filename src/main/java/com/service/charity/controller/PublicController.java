@@ -10,6 +10,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,12 +25,22 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.service.charity.builder.request.CheckoutRq;
 import com.service.charity.builder.request.ProjectListRequest;
+import com.service.charity.builder.response.MessageResponse;
+import com.service.charity.config.Constants;
+import com.service.charity.config.Utils;
+import com.service.charity.model.PaymentSession;
+import com.service.charity.model.Users;
+import com.service.charity.service.AuthService;
+import com.service.charity.service.GoogleRecaptchaService;
 import com.service.charity.service.UserService;
 import com.stripe.Stripe;
+import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
 import com.stripe.model.EventDataObjectDeserializer;
+import com.stripe.model.PaymentIntent;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import com.stripe.param.checkout.SessionCreateParams;
@@ -42,6 +53,14 @@ public class PublicController {
 
 	@Autowired
 	UserService userService;
+
+	@Autowired
+	GoogleRecaptchaService googleRecaptchaService;
+
+	@Autowired
+	AuthService authService;
+
+    private static final String ENDPOINT_SECRET = "whsec_YMBsc2t23Xxz51AY5dviFUlp6wzv6AlY";
 
 	@RequestMapping(value = { "/project/list", "/{version}/project/list" }, method = RequestMethod.POST)
 	public ResponseEntity<?> projectlist(@RequestBody ProjectListRequest request,
@@ -58,7 +77,32 @@ public class PublicController {
 	}
 
 	@PostMapping("/checkout/session")
-	public ResponseEntity<Map<String, Object>> createCheckoutSession() throws StripeException {
+	public ResponseEntity<?> createCheckoutSession(
+			@RequestHeader(name = "Accept-Language", required = false) Locale locale,
+			@RequestHeader(name = "token", required = false) String token, 
+			@RequestHeader(name = "apikey", required = false) String apikey, 
+			@RequestHeader(name = "apisecret", required = false) String apisecret, 
+			@RequestHeader(name = "username", required = false) String username, 
+			@RequestBody CheckoutRq rq) throws StripeException {
+
+		// Validate token and captcha if needed
+//		ResponseEntity<?> verifycaptcha = googleRecaptchaService.verifyRecaptcha(locale, rq.getCaptchaToken());
+//		if (verifycaptcha != null) 
+//			return verifycaptcha;
+
+		boolean isregisteruser = true;
+		ResponseEntity<?> auth = authService.callAuth(apikey, apisecret, username, token, Constants.DONOTCHECKME, locale.getLanguage());
+
+		if (auth != null && auth.getBody() instanceof Users) { // success
+			isregisteruser = false;
+			Users user = (Users) auth.getBody();
+	        rq.setUsername(user.getUsername());
+		}
+		else {
+			// invalid token
+			return auth;
+		}
+		
 		Stripe.apiKey = "sk_test_51RQCR8R68I1yevpeqgncFrK242495lQJZEFZU3wjTQZm9qIyUDMkR1qA0EQPAfsIXe1YQYo9Bm1fYM6QTLL6Jlle00K6I3A2e9"; // Replace
 
 		
@@ -76,12 +120,13 @@ public class PublicController {
 		        )
 		        .build()
 		);
+		
+		PaymentSession ps = userService.handlepaymentsession(token, rq, isregisteruser);
 
 		SessionCreateParams params = SessionCreateParams.builder().addAllLineItem(lineItems)
 				.setMode(SessionCreateParams.Mode.PAYMENT)
 				.setSuccessUrl("http://mission.westeurope.cloudapp.azure.com/public/successpayment?session_id={CHECKOUT_SESSION_ID}")
-				.setCancelUrl("http://mission.westeurope.cloudapp.azure.com/public/cancelpayment").putMetadata("order_id", "productid_12345") // 👈 attach your internal
-																							// order ID
+				.setCancelUrl("http://mission.westeurope.cloudapp.azure.com/public/cancelpayment").putMetadata(Constants.PSID, ps.getId())
 				.build();
 
 		Session session = Session.create(params);
@@ -94,43 +139,40 @@ public class PublicController {
 
 	@PostMapping("/webhook")
 	public ResponseEntity<String> handleWebhook(HttpServletRequest request) throws IOException {
-		String payload = new String(request.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-	    String sigHeader = request.getHeader("Stripe-Signature");
-	    String endpointSecret = "whsec_YMBsc2t23Xxz51AY5dviFUlp6wzv6AlY";
+		String payload;
+        String sigHeader = request.getHeader("Stripe-Signature");
 
-	    Event event;
+        try {
+            payload = new String(request.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            return ResponseEntity.status(400).body("Failed to read payload");
+        }
 
-	    try {
-	        event = Webhook.constructEvent(payload, sigHeader, endpointSecret);
-	    } catch (Exception e) {
-	        System.out.println("Webhook error: " + e.getMessage());
-	        return ResponseEntity.status(400).body("Invalid signature");
-	    }
+        Event event;
+        try {
+            event = Webhook.constructEvent(payload, sigHeader, ENDPOINT_SECRET);
+        } catch (SignatureVerificationException e) {
+            System.out.println("Webhook signature verification failed: " + e.getMessage());
+            return ResponseEntity.status(400).body("Invalid signature");
+        }
 
-	    switch (event.getType()) {
-//	        case "checkout.session.completed":
-	        case "payment_intent.succeeded":
-	            EventDataObjectDeserializer dataObjectDeserializer = event.getDataObjectDeserializer();
+        // Log raw payload
+        System.out.println(">> Webhook received:");
+        System.out.println(payload);
 
-	            if (dataObjectDeserializer.getObject().isPresent()) {
-	                Session session = (Session) dataObjectDeserializer.getObject().get();
+        try {
+            // Parse JSON manually using JSONObject
+            JSONObject json = new JSONObject(payload);
+            String eventType = json.getString("type");
+            
+        	PaymentSession ps = userService.handlepaymentwebhook(json, eventType);
+        	
+        } catch (Exception e) {
+            System.out.println("Error parsing event JSON: " + e.getMessage());
+            return ResponseEntity.status(400).body("Invalid event structure");
+        }
 
-	                System.out.println("Payment successful for session: " + session.getId());
-
-	                String orderId = session.getMetadata() != null ? session.getMetadata().get("order_id") : null;
-	                System.out.println("order_id >>>>>>>>>: " + orderId);
-
-	                return ResponseEntity.ok("Session completed for order: " + orderId);
-	            } else {
-	                System.out.println("Failed to deserialize session object");
-	            }
-	            break;
-
-	        default:
-	            System.out.println("Unhandled event type: " + event.getType());
-	    }
-
-	    return ResponseEntity.ok("");
+        return ResponseEntity.ok("Webhook received");
 	}
 
 	@RequestMapping(value = "/project/download/file/{fileName}", method = RequestMethod.GET)
@@ -197,20 +239,10 @@ public class PublicController {
 
 	    if ("AUTHORIZED".equalsIgnoreCase(status) || "PAID".equalsIgnoreCase(status)) {
 	        // ✅ Store donation
-	        System.out.println("✅ Donation successful: " + amount + " cents, ref: " + reference);
+	        System.out.println("Donation successful: " + amount + " cents, ref: " + reference);
 	    }
 
 	    return ResponseEntity.ok("Webhook received");
 	}
 
-	
-	private boolean registeruser() {
-		// save checkout details
-		// register user after payment
-		// send email to user email to thank him for his donation
-		// allow user to set his account password to see his donations that he did on the projects
-		// 	redirect user to otp change password page he enters the otp from his email and change his password
-		// save donation amount and update total project donation amount
-		return true;
-	}
 }
