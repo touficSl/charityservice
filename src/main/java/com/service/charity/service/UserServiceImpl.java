@@ -30,12 +30,15 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.service.charity.builder.request.CheckoutRq;
 import com.service.charity.builder.request.DonateRq;
+import com.service.charity.builder.request.EmailDetailsRq;
 import com.service.charity.builder.request.ProjectListRequest;
 import com.service.charity.builder.response.DatatableResponse;
 import com.service.charity.builder.response.MessageResponse;
 import com.service.charity.config.Constants;
+import com.service.charity.config.SanitizedStringDeserializer;
 import com.service.charity.model.Charity;
 import com.service.charity.model.PaymentSession;
 import com.service.charity.model.Project;
@@ -64,6 +67,9 @@ public class UserServiceImpl implements UserService {
 	
 	@Autowired
 	PaymentSessionRepository paymentSessionRepository;
+
+	@Autowired
+	EmailService emailService;
 
 	@Value("${spring.file.uploaddir}") 
     private String fileuploaddir;
@@ -285,7 +291,7 @@ public class UserServiceImpl implements UserService {
 	    JSONObject session = payload.getJSONObject("data").getJSONObject("object");
 	    if (session.has("metadata")) {
 	        JSONObject metadata = session.getJSONObject("metadata");
-	        if (metadata.has("order_id")) {
+	        if (metadata.has(Constants.PSID)) {
 	            String psid = metadata.getString(Constants.PSID); 
 	            System.out.println("PaymentIntent succeeded. PS ID: " + psid);
 
@@ -314,6 +320,16 @@ public class UserServiceImpl implements UserService {
 	                    ps.setThirdpartyerror(errorCode + " | " + errorMessage);
 	                }
 	                
+	                // Extract customer email if available
+	                if (session.has("customer_details")) {
+	                    JSONObject customerDetails = session.getJSONObject("customer_details");
+	                    if (customerDetails.has("email")) {
+	                        String email = customerDetails.getString("email");
+	                        System.out.println("Customer Email: " + email);
+	                        ps.setEmail(email); // assuming your PaymentSession has this field
+	                    }
+	                }
+	                
 	                ps.setThirdpartystatus(eventType);
 	                ps = paymentSessionRepository.save(ps);
 	            } else {
@@ -327,30 +343,47 @@ public class UserServiceImpl implements UserService {
 	        return null;
 	    }
 
+	    Project projectentity = null;
 		// save donation amount and update total project donation amount
 	    if (success) {
             // You may need to determine the project logic from username, metadata, or another field
             Optional<Project> project = projectRepository.findById(ps.getProjectid()); 
             if (project.isPresent()) {
+            	projectentity = project.get();
                 Charity charity = new Charity();
                 charity.setAmount(ps.getAmount());
                 charity.setUsername(ps.getUsername());
                 charity.setPaymentReference(ps.getId());
                 charity.setPaymentStatus(ps.getStatus());
-                charity.setProject(project.get());
+                charity.setProject(projectentity);
                 charityRepository.save(charity);
+                
+                BigDecimal totalamount = charityRepository.sumoftotalcharityamount(ps.getProjectid());
+                projectentity.setTotalCharityAmount(totalamount);
+                projectRepository.save(projectentity);
             }
             
             if (ps.isRegisteruser()) {
+    	        System.out.println("Register new user.");
             	// TODO
         		// register user after payment
             	// call auth to register a user and send email to reset his password (use ps data)
         		// allow user to set his account password to see his donations that he did on the projects
         		// redirect user to otp change password page he enters the otp from his email and change his password
             }
+            else {
+    	        System.out.println("Existing user.");
+            	
+            }
 
-        	// TODO
     		// send email to username = email to thank him for his donation
+            EmailDetailsRq rq = new EmailDetailsRq();
+            rq.setName(ps.getName());
+            rq.setRecipient(ps.getUsername()); // ps.getEmail()
+            rq.setSubject("Thank You");
+            String projecttitle = projectentity != null ? projectentity.getTitle() : "";
+            rq.setMsgBody("Hi, " + ps.getName() + "<br>Thank you for your donation to the project " + projecttitle);
+    		boolean sent = emailService.sendSimpleMail(rq);
         }
 		return ps;
 	}

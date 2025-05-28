@@ -45,6 +45,8 @@ public class PaymentSession {
     
     private boolean registeruser;
     
+    private String email;
+    
     // Constructors
     public PaymentSession() {}
 
@@ -136,5 +138,13 @@ public class PaymentSession {
 
 	public void setRegisteruser(boolean registeruser) {
 		this.registeruser = registeruser;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 }
