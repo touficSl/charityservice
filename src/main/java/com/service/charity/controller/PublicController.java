@@ -28,9 +28,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.service.charity.builder.request.CheckoutRq;
 import com.service.charity.builder.request.ProjectListRequest;
-import com.service.charity.builder.response.MessageResponse;
 import com.service.charity.config.Constants;
-import com.service.charity.config.Utils;
 import com.service.charity.model.PaymentSession;
 import com.service.charity.model.Users;
 import com.service.charity.service.AuthService;
@@ -40,8 +38,6 @@ import com.stripe.Stripe;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
-import com.stripe.model.EventDataObjectDeserializer;
-import com.stripe.model.PaymentIntent;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import com.stripe.param.checkout.SessionCreateParams;
@@ -129,8 +125,13 @@ public class PublicController {
 		SessionCreateParams params = SessionCreateParams.builder().addAllLineItem(lineItems)
 				.setMode(SessionCreateParams.Mode.PAYMENT)
 				.setSuccessUrl("http://mission.westeurope.cloudapp.azure.com/public/successpayment?session_id={CHECKOUT_SESSION_ID}")
-				.setCancelUrl("http://mission.westeurope.cloudapp.azure.com/public/cancelpayment").putMetadata(Constants.PSID, ps.getId())
+				.setCancelUrl("http://mission.westeurope.cloudapp.azure.com/public/cancelpayment")
+				.putMetadata(Constants.PSID, ps.getId())
+				.setCustomerCreation(SessionCreateParams.CustomerCreation.ALWAYS)
+				.setClientReferenceId(ps.getId())
 				.build();
+
+		System.out.println("Creating Stripe session with psid = " + ps.getId());
 
 		Session session = Session.create(params);
 

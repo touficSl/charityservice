@@ -26,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -48,6 +49,8 @@ import com.service.charity.reposiroty.CharityRepository;
 import com.service.charity.reposiroty.PaymentSessionRepository;
 import com.service.charity.reposiroty.ProjectImageRepository;
 import com.service.charity.reposiroty.ProjectRepository;
+import com.service.charity.rest.call.RegisterUser;
+import com.service.charity.rest.call.VerifyAuth;
 
 
 @Service
@@ -74,6 +77,20 @@ public class UserServiceImpl implements UserService {
 	@Value("${spring.file.uploaddir}") 
     private String fileuploaddir;
 
+
+	@Value("${spring.auth.endpoint.api}") 
+	private String authendpointapi;
+	@Value("${spring.service.auth.register.user.api}") 
+	private String authregisteruserapi;
+	@Value("${spring.apikey}") 
+	private String apikey;
+	@Value("${spring.serverkey}") 
+	private String serverkey;
+	@Value("${spring.apisecret}") 
+	private String apisecret;
+
+	@Value("${spring.serverpass}") 
+	private String serverpass;
 	
 	@Override
 	public ResponseEntity<?> projectlist(Locale locale, boolean b, Integer page, Integer size, String search,
@@ -287,61 +304,63 @@ public class UserServiceImpl implements UserService {
 	    }
 
 	    PaymentSession ps = null;
-	    
+
 	    JSONObject session = payload.getJSONObject("data").getJSONObject("object");
-	    if (session.has("metadata")) {
+    	String psid = null;
+    	if (session.has("client_reference_id"))
+    		psid = session.getString("client_reference_id");
+		else if (session.has("metadata")) {
 	        JSONObject metadata = session.getJSONObject("metadata");
-	        if (metadata.has(Constants.PSID)) {
-	            String psid = metadata.getString(Constants.PSID); 
-	            System.out.println("PaymentIntent succeeded. PS ID: " + psid);
+	        if (metadata.has(Constants.PSID)) 
+	            psid = metadata.getString(Constants.PSID); 
+        }
+		if (psid != null) {
+            System.out.println("PaymentIntent succeeded. PS ID: " + psid);
 
-	            Optional<PaymentSession> optionalSession = paymentSessionRepository.findById(psid);
-	            if (optionalSession.isPresent()) {
-	                ps = optionalSession.get();
+            Optional<PaymentSession> optionalSession = paymentSessionRepository.findById(psid);
+            if (optionalSession.isPresent()) {
+                ps = optionalSession.get();
 
-	                if (session.has("amount_total") && session.has("currency")) {
-	                    int amountTotal = session.getInt("amount_total");
-	                    BigDecimal amount = BigDecimal.valueOf(amountTotal).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+                if (session.has("amount_total") && session.has("currency")) {
+                    int amountTotal = session.getInt("amount_total");
+                    BigDecimal amount = BigDecimal.valueOf(amountTotal).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
 
-	                    ps.setStatus(success ? Constants.COMPLETED : Constants.FAILED);
-	                    ps.setAmount(amount);
-	                } else {
-	                    System.out.println("Missing amount_total or currency in session.");
-	                    ps.setStatus("FAILED");
-	                }
-	                
-	                String errorCode = null;
-	                String errorMessage = null;
-	                if (session.has("last_payment_error")) {
-	                    JSONObject error = session.getJSONObject("last_payment_error");
-	                    errorCode = error.optString("code");
-	                    errorMessage = error.optString("message");
-	                    System.out.println("Payment Error - Code: " + errorCode + ", Message: " + errorMessage);
-	                    ps.setThirdpartyerror(errorCode + " | " + errorMessage);
-	                }
-	                
-	                // Extract customer email if available
-	                if (session.has("customer_details")) {
-	                    JSONObject customerDetails = session.getJSONObject("customer_details");
-	                    if (customerDetails.has("email")) {
-	                        String email = customerDetails.getString("email");
-	                        System.out.println("Customer Email: " + email);
-	                        ps.setEmail(email); // assuming your PaymentSession has this field
-	                    }
-	                }
-	                
-	                ps.setThirdpartystatus(eventType);
-	                ps = paymentSessionRepository.save(ps);
-	            } else {
-	                System.out.println("PaymentSession not found with ID: " + psid);
-	            }
-	        } else {
-	            System.out.println("No psid in metadata.");
-	        }
-	    } else {
-	        System.out.println("No metadata found in payment intent.");
+                    ps.setStatus(success ? Constants.COMPLETED : Constants.FAILED);
+                    ps.setAmount(amount);
+                } else {
+                    System.out.println("Missing amount_total or currency in session.");
+                    ps.setStatus("FAILED");
+                }
+                
+                String errorCode = null;
+                String errorMessage = null;
+                if (session.has("last_payment_error")) {
+                    JSONObject error = session.getJSONObject("last_payment_error");
+                    errorCode = error.optString("code");
+                    errorMessage = error.optString("message");
+                    System.out.println("Payment Error - Code: " + errorCode + ", Message: " + errorMessage);
+                    ps.setThirdpartyerror(errorCode + " | " + errorMessage);
+                }
+                
+                // Extract customer email if available
+                if (session.has("customer_details")) {
+                    JSONObject customerDetails = session.getJSONObject("customer_details");
+                    if (customerDetails.has("email")) {
+                        String email = customerDetails.getString("email");
+                        System.out.println("Customer Email: " + email);
+                        ps.setEmail(email); // assuming your PaymentSession has this field
+                    }
+                }
+                
+                ps.setThirdpartystatus(eventType);
+                ps = paymentSessionRepository.save(ps);
+            } else {
+                System.out.println("PaymentSession not found with ID: " + psid);
+            }
+        } else {
+            System.out.println("No psid in metadata or client_reference_id");
 	        return null;
-	    }
+        }
 
 	    Project projectentity = null;
 		// save donation amount and update total project donation amount
@@ -365,11 +384,28 @@ public class UserServiceImpl implements UserService {
             
             if (ps.isRegisteruser()) {
     	        System.out.println("Register new user.");
-            	// TODO
         		// register user after payment
             	// call auth to register a user and send email to reset his password (use ps data)
         		// allow user to set his account password to see his donations that he did on the projects
         		// redirect user to otp change password page he enters the otp from his email and change his password
+
+    		    System.out.println("ENDPT>> " + authendpointapi + authregisteruserapi);
+    	        RegisterUser registerUser = new RegisterUser(authendpointapi + authregisteruserapi, apikey, apisecret, "en", serverkey, serverpass, ps.getName(), ps.getUsername(), null);
+    			String registerUserRes = registerUser.callAsPost();
+    			if (registerUserRes == null) {
+    				System.out.println("Error while calling register user");
+    			}
+    			else {
+
+    				System.out.println("registerUserRes >> "  + registerUserRes);
+    			}
+    	
+//    			JSONObject registerUserResponse = new JSONObject(registerUserRes);
+//    			if (registerUserResponse == null || !registerUserResponse.has("user_id")) {
+//
+//    				return new ResponseEntity<String>(registerUserResponse.toString(), HttpStatus.OK);
+//    			}
+            
             }
             else {
     	        System.out.println("Existing user.");
