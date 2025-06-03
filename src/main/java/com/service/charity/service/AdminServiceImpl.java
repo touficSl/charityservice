@@ -137,26 +137,27 @@ public class AdminServiceImpl implements AdminService {
 
 		try {
 			Page<Charity> pages = null;
-			long totalrows = charityRepository.count();
-			long recordsFiltered = totalrows;
 
 			boolean showallusers = false;
 			if (Utils.isapiauthorized("showallusers", null, user.getAuthorizedapis()))
 				showallusers = true;
+			long totalrows = showallusers ? charityRepository.count() : 0;
+			long recordsFiltered = totalrows;
 			Specification<Charity> spec = JPASpecification.returnCharitytSpecification(search, sortcolumn, descending, projectId, showallusers ? null : user.getUsername());
 		    Pageable pageable = PageRequest.of(page, size);
 		    pages = charityRepository.findAll(spec, pageable);
+			
+			if (!showallusers) {
+				Specification<Charity> spec1 = JPASpecification.returnCharitytSpecification(null, sortcolumn, descending, projectId, user.getUsername());
+				List<Charity> usercharities = charityRepository.findAll(spec1);
+				totalrows = usercharities.size();
+				recordsFiltered = totalrows;
+			}
 		    
 			if (search != null && !search.trim().equals("")) {
 				List<Charity> allusersbysearch = charityRepository.findAll(spec);
 				recordsFiltered = allusersbysearch.size();
 			} 
-			
-			if (!showallusers) {
-				Specification<Charity> spec1 = JPASpecification.returnCharitytSpecification(null, sortcolumn, descending, projectId, user.getUsername());
-				List<Charity> usercharities = charityRepository.findAll(spec);
-				totalrows = usercharities.size();
-			}
 	
 	        List<Charity> list = new ArrayList<Charity>(pages.getContent());
 	        
