@@ -92,6 +92,8 @@ public class UserServiceImpl implements UserService {
 	@Value("${spring.serverpass}") 
 	private String serverpass;
 	
+	private static boolean isdebug = true;
+	
 	@Override
 	public ResponseEntity<?> projectlist(Locale locale, boolean b, Integer page, Integer size, String search,
 			String sortcolumn, Boolean descending, Integer draw, String username) {
@@ -280,7 +282,7 @@ public class UserServiceImpl implements UserService {
 	        paymentSessionRepository.save(session);
 	
 	        // Optional: log or trigger payment URL logic
-	        System.out.println("Payment session saved: " + session.getId());
+	        if(isdebug) System.out.println("Payment session saved: " + session.getId());
 	        
 	        return session;
 		} catch (Exception e) {
@@ -315,7 +317,7 @@ public class UserServiceImpl implements UserService {
 	            psid = metadata.getString(Constants.PSID); 
         }
 		if (psid != null) {
-            System.out.println("PaymentIntent succeeded. PS ID: " + psid);
+            if(isdebug) System.out.println("PaymentIntent succeeded. PS ID: " + psid);
 
             Optional<PaymentSession> optionalSession = paymentSessionRepository.findById(psid);
             if (optionalSession.isPresent()) {
@@ -328,7 +330,7 @@ public class UserServiceImpl implements UserService {
                     ps.setStatus(success ? Constants.COMPLETED : Constants.FAILED);
                     ps.setAmount(amount);
                 } else {
-                    System.out.println("Missing amount_total or currency in session.");
+                    if(isdebug) System.out.println("Missing amount_total or currency in session.");
                     ps.setStatus("FAILED");
                 }
                 
@@ -338,7 +340,7 @@ public class UserServiceImpl implements UserService {
                     JSONObject error = session.getJSONObject("last_payment_error");
                     errorCode = error.optString("code");
                     errorMessage = error.optString("message");
-                    System.out.println("Payment Error - Code: " + errorCode + ", Message: " + errorMessage);
+                    if(isdebug) System.out.println("Payment Error - Code: " + errorCode + ", Message: " + errorMessage);
                     ps.setThirdpartyerror(errorCode + " | " + errorMessage);
                 }
                 
@@ -347,7 +349,7 @@ public class UserServiceImpl implements UserService {
                     JSONObject customerDetails = session.getJSONObject("customer_details");
                     if (customerDetails.has("email")) {
                         String email = customerDetails.getString("email");
-                        System.out.println("Customer Email: " + email);
+                        if(isdebug) System.out.println("Customer Email: " + email);
                         ps.setEmail(email); // assuming your PaymentSession has this field
                     }
                 }
@@ -355,10 +357,10 @@ public class UserServiceImpl implements UserService {
                 ps.setThirdpartystatus(eventType);
                 ps = paymentSessionRepository.save(ps);
             } else {
-                System.out.println("PaymentSession not found with ID: " + psid);
+                if(isdebug) System.out.println("PaymentSession not found with ID: " + psid);
             }
         } else {
-            System.out.println("No psid in metadata or client_reference_id");
+            if(isdebug) System.out.println("No psid in metadata or client_reference_id");
 	        return null;
         }
 
@@ -379,26 +381,26 @@ public class UserServiceImpl implements UserService {
                 
                 BigDecimal totalamount = charityRepository.sumoftotalcharityamount(ps.getProjectid());
                 projectentity.setTotalCharityAmount(totalamount);
-    	        System.out.println("Total Charity Amount >> " + totalamount);
+    	        if(isdebug) System.out.println("Total Charity Amount >> " + totalamount);
                 projectRepository.save(projectentity);
             }
             
             if (ps.isRegisteruser()) {
-    	        System.out.println("Register new user.");
+    	        if(isdebug) System.out.println("Register new user.");
         		// register user after payment
             	// call auth to register a user and send email to reset his password (use ps data)
         		// allow user to set his account password to see his donations that he did on the projects
         		// redirect user to otp change password page he enters the otp from his email and change his password
 
-    		    System.out.println("ENDPT>> " + authendpointapi + authregisteruserapi);
+    		    if(isdebug) System.out.println("ENDPT>> " + authendpointapi + authregisteruserapi);
     	        RegisterUser registerUser = new RegisterUser(authendpointapi + authregisteruserapi, apikey, apisecret, "en", serverkey, serverpass, ps.getName(), ps.getUsername(), null);
     			String registerUserRes = registerUser.callAsPost();
     			if (registerUserRes == null) {
-    				System.out.println("Error while calling register user");
+    				if(isdebug) System.out.println("Error while calling register user");
     			}
     			else {
 
-    				System.out.println("registerUserRes >> "  + registerUserRes);
+    				if(isdebug) System.out.println("registerUserRes >> "  + registerUserRes);
     			}
     	
 //    			JSONObject registerUserResponse = new JSONObject(registerUserRes);
@@ -409,7 +411,7 @@ public class UserServiceImpl implements UserService {
             
             }
             else {
-    	        System.out.println("Existing user.");
+    	        if(isdebug) System.out.println("Existing user.");
             	
             }
 
