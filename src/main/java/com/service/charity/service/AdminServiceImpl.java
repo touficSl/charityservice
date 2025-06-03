@@ -71,11 +71,13 @@ public class AdminServiceImpl implements AdminService {
 			Page<Project> userspage = null;
 			long totalrows = projectRepository.count();
 			long recordsFiltered = totalrows;
-			
-			boolean showallusers = false;
+
+			Specification<Project> spec = null;
 			if (Utils.isapiauthorized("showallusers", null, user.getAuthorizedapis()))
-				showallusers = true;
-			Specification<Project> spec = JPASpecification.returnProjecttSpecification(search, sortcolumn, descending, showallusers ? null : user.getUsername());
+				spec = JPASpecification.returnProjecttSpecification(search, sortcolumn, descending);
+			else
+				spec = JPASpecification.returnCharityProjecttSpecification(search, sortcolumn, descending, user.getUsername());
+			
 		    Pageable pageable = PageRequest.of(page, size);
 		    userspage = projectRepository.findAll(spec, pageable);
 		    
@@ -99,17 +101,19 @@ public class AdminServiceImpl implements AdminService {
 	public ResponseEntity<?> projectsave(Locale locale, Users user, ProjectRq rq) {
 		try {
 
+			Project existingproject = null;
 			if (rq.getId() != null && rq.getId() > 0) {
 				Optional<Project> projectopt = projectRepository.findById(rq.getId());
 				if (!projectopt.isPresent())
 					return ResponseEntity.ok(new MessageResponse(messageService.getMessage("not_found", locale), 122));
-				Project existingproject = projectopt.get();
+				existingproject = projectopt.get();
 				rq.setReference(existingproject.getReference());
 			} 
 			else 
 				rq.setReference(generateUniqueProjectReference());
 			
 			Project Project = new Project(rq);
+			if (existingproject != null) Project.setTotalCharityAmount(existingproject.getTotalCharityAmount());
 			Project = projectRepository.save(Project);
 			return ResponseEntity.ok(Project);
 		} catch (Exception e) {
@@ -129,14 +133,17 @@ public class AdminServiceImpl implements AdminService {
 
 	@Override
 	public ResponseEntity<?> charitylist(Locale locale, boolean b, Integer page, Integer size, String search,
-			String sortcolumn, Boolean descending, Integer draw, String username, Long projectId) {
+			String sortcolumn, Boolean descending, Integer draw, String username, Long projectId, Users user) {
 
 		try {
 			Page<Charity> pages = null;
 			long totalrows = charityRepository.count();
 			long recordsFiltered = totalrows;
 
-			Specification<Charity> spec = JPASpecification.returnCharitytSpecification(search, sortcolumn, descending, projectId);
+			boolean showallusers = false;
+			if (Utils.isapiauthorized("showallusers", null, user.getAuthorizedapis()))
+				showallusers = true;
+			Specification<Charity> spec = JPASpecification.returnCharitytSpecification(search, sortcolumn, descending, projectId, showallusers ? null : user.getUsername());
 		    Pageable pageable = PageRequest.of(page, size);
 		    pages = charityRepository.findAll(spec, pageable);
 		    

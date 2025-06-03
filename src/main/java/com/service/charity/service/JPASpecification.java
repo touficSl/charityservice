@@ -11,11 +11,8 @@ import jakarta.persistence.criteria.Predicate;
 
 public class JPASpecification {
 
-    public static Specification<Project> returnProjecttSpecification(String search, String sortColumn, boolean descending, String currentusername) {
+    public static Specification<Project> returnProjecttSpecification(String search, String sortColumn, boolean descending) {
         return (root, query, criteriaBuilder) -> {
-
-        	if (currentusername != null) 
-        		criteriaBuilder.equal(root.get("username"), currentusername);
         	
             if (descending) 
                 query.orderBy(criteriaBuilder.desc(root.get(sortColumn)));
@@ -75,7 +72,7 @@ public class JPASpecification {
 	}
 
 	public static Specification<Charity> returnCharitytSpecification(String search, String sortColumn,
-			Boolean descending, Long projectId) {
+			Boolean descending, Long projectId, String currentusername) {
 	    return (root, query, criteriaBuilder) -> {
 	        // Handle sorting safely
 	        if (sortColumn != null && !sortColumn.isEmpty()) {
@@ -96,6 +93,8 @@ public class JPASpecification {
 	                criteriaBuilder.equal(root.get("project").get("id"), projectId)
 	            );
 	        }
+        	if (currentusername != null) 
+        		criteriaBuilder.equal(root.get("username"), currentusername);
 
 	        // Apply search filters if search string is provided
 	        if (search != null && !search.isEmpty()) {

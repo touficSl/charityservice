@@ -81,6 +81,7 @@ public class AdminController {
 	
 	@RequestMapping(value = "/charity/list", method = RequestMethod.POST)
 	public ResponseEntity<?> charitylist(@RequestHeader(name = "Accept-Language", required = false) Locale locale,
+									HttpServletRequest request, 
 			  					  @RequestHeader(name = "projectid", required = true, defaultValue = "0") Long projectId,
 								  @RequestHeader(name = "page", required = false, defaultValue = "0") Integer page,
 								  @RequestHeader(name = "size", required = false, defaultValue = "0") Integer size,
@@ -89,8 +90,9 @@ public class AdminController {
 								  @RequestHeader(name = "descending", required = false, defaultValue = "false") Boolean descending,
 						          @RequestHeader(name = "draw", required = false, defaultValue = "1") Integer draw,
 								  @RequestHeader(name = "username", required = true) String username) {
-		
-		return adminService.charitylist(locale, false, page, size, search, sortcolumn, descending, draw, username, projectId);
+
+		Users user = (Users) request.getAttribute("user");
+		return adminService.charitylist(locale, false, page, size, search, sortcolumn, descending, draw, username, projectId, user);
 	}
 
 	@RequestMapping(value = "/charity/statistics", method = RequestMethod.POST)

@@ -73,7 +73,7 @@ public class Project {
 		this.description = rq.getDescription();
 		this.estimationTime = Utils.convertStringToDate(rq.getEstimationTime(), Constants.DATE_FORMAT);
 		this.cost = Utils.convertToBigDecimal(rq.getCost());
-		this.totalCharityAmount = this.totalCharityAmount != null && this.totalCharityAmount.compareTo(BigDecimal.ZERO) > 0 ? totalCharityAmount : BigDecimal.ZERO;
+//		this.totalCharityAmount = this.totalCharityAmount != null && this.totalCharityAmount.compareTo(BigDecimal.ZERO) > 0 ? totalCharityAmount : BigDecimal.ZERO;
 		this.dateTime = new Date();
 		this.type = rq.getType();
 		this.status = rq.getStatus();

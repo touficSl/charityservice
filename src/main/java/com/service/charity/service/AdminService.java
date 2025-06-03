@@ -16,7 +16,7 @@ public interface AdminService {
 	ResponseEntity<?> projectsave(Locale locale, Users user, ProjectRq rq);
 
 	ResponseEntity<?> charitylist(Locale locale, boolean b, Integer page, Integer size, String search,
-			String sortcolumn, Boolean descending, Integer draw, String username, Long projectId);
+			String sortcolumn, Boolean descending, Integer draw, String username, Long projectId, Users user);
 	
 
 	ResponseEntity<?> fileslist(Locale locale, Long projectid, Users user);
