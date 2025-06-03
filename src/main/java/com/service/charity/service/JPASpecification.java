@@ -100,7 +100,7 @@ public class JPASpecification {
 	        }
 
 	        // Filter by current username if provided
-	        if (currentusername != null && !currentusername.trim().isEmpty()) {
+	        if (currentusername != null) {
 	            predicate = criteriaBuilder.and(
 	                predicate,
 	                criteriaBuilder.equal(root.get("username"), currentusername)

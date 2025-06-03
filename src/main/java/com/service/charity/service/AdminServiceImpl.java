@@ -151,6 +151,12 @@ public class AdminServiceImpl implements AdminService {
 				List<Charity> allusersbysearch = charityRepository.findAll(spec);
 				recordsFiltered = allusersbysearch.size();
 			} 
+			
+			if (!showallusers) {
+				Specification<Charity> spec1 = JPASpecification.returnCharitytSpecification(null, sortcolumn, descending, projectId, user.getUsername());
+				List<Charity> usercharities = charityRepository.findAll(spec);
+				totalrows = usercharities.size();
+			}
 	
 	        List<Charity> list = new ArrayList<Charity>(pages.getContent());
 	        
