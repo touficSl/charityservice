@@ -42,6 +42,7 @@ public class AdminController {
 	
 	@RequestMapping(value = "/project/list", method = RequestMethod.POST)
 	public ResponseEntity<?> projectlist(@RequestHeader(name = "Accept-Language", required = false) Locale locale,
+									HttpServletRequest request, 
 								  @RequestHeader(name = "page", required = false, defaultValue = "0") Integer page,
 								  @RequestHeader(name = "size", required = false, defaultValue = "0") Integer size,
 								  @RequestHeader(name = "search", required = false) String search,
@@ -49,8 +50,9 @@ public class AdminController {
 								  @RequestHeader(name = "descending", required = false, defaultValue = "false") Boolean descending,
 						          @RequestHeader(name = "draw", required = false, defaultValue = "1") Integer draw,
 								  @RequestHeader(name = "username", required = true) String username) {
-		
-		return adminService.projectlist(locale, false, page, size, search, sortcolumn, descending, draw, username);
+
+		Users user = (Users) request.getAttribute("user");
+		return adminService.projectlist(locale, false, page, size, search, sortcolumn, descending, draw, username, user);
 	}
 	
 	@RequestMapping(value = {"/project/save", "/{version}/project/save"}, 

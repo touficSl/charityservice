@@ -11,7 +11,7 @@ import com.service.charity.model.Users;
 public interface AdminService {
 
 	ResponseEntity<?> projectlist(Locale locale, boolean b, Integer page, Integer size, String search,
-			String sortcolumn, Boolean descending, Integer draw, String username);
+			String sortcolumn, Boolean descending, Integer draw, String username, Users user);
 
 	ResponseEntity<?> projectsave(Locale locale, Users user, ProjectRq rq);
 

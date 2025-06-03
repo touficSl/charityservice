@@ -11,9 +11,12 @@ import jakarta.persistence.criteria.Predicate;
 
 public class JPASpecification {
 
-    public static Specification<Project> returnProjecttSpecification(String search, String sortColumn, boolean descending) {
+    public static Specification<Project> returnProjecttSpecification(String search, String sortColumn, boolean descending, String currentusername) {
         return (root, query, criteriaBuilder) -> {
 
+        	if (currentusername != null) 
+        		criteriaBuilder.equal(root.get("username"), currentusername);
+        	
             if (descending) 
                 query.orderBy(criteriaBuilder.desc(root.get(sortColumn)));
             else 

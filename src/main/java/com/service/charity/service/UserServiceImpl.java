@@ -379,6 +379,7 @@ public class UserServiceImpl implements UserService {
                 
                 BigDecimal totalamount = charityRepository.sumoftotalcharityamount(ps.getProjectid());
                 projectentity.setTotalCharityAmount(totalamount);
+    	        System.out.println("Total Charity Amount >> " + totalamount);
                 projectRepository.save(projectentity);
             }
             

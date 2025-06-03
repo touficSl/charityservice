@@ -65,14 +65,17 @@ public class AdminServiceImpl implements AdminService {
 	
 	@Override
 	public ResponseEntity<?> projectlist(Locale locale, boolean b, Integer page, Integer size, String search,
-			String sortcolumn, Boolean descending, Integer draw, String username) {
+			String sortcolumn, Boolean descending, Integer draw, String username, Users user) {
 
 		try {
 			Page<Project> userspage = null;
 			long totalrows = projectRepository.count();
 			long recordsFiltered = totalrows;
-
-			Specification<Project> spec = JPASpecification.returnProjecttSpecification(search, sortcolumn, descending);
+			
+			boolean showallusers = false;
+			if (Utils.isapiauthorized("showallusers", null, user.getAuthorizedapis()))
+				showallusers = true;
+			Specification<Project> spec = JPASpecification.returnProjecttSpecification(search, sortcolumn, descending, showallusers ? null : user.getUsername());
 		    Pageable pageable = PageRequest.of(page, size);
 		    userspage = projectRepository.findAll(spec, pageable);
 		    
