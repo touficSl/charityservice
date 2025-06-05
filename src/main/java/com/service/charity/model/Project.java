@@ -35,8 +35,12 @@ public class Project {
     private String description;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATE_FORMAT)
-    @Column(name = "estimation_time")
-    private Date estimationTime;
+    @Column(name = "startdate")
+    private Date startdate;
+    
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = Constants.DATE_FORMAT)
+    @Column(name = "enddate")
+    private Date enddate;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal cost;
@@ -57,6 +61,8 @@ public class Project {
     @Column(columnDefinition = "BIT(1) DEFAULT b'1'")
     private Boolean enable;
 
+    private String currency;
+
     @Transient
     private List<String> images;
     
@@ -71,13 +77,15 @@ public class Project {
 		this.reference = rq.getReference();
 		this.title = rq.getTitle();
 		this.description = rq.getDescription();
-		this.estimationTime = Utils.convertStringToDate(rq.getEstimationTime(), Constants.DATE_FORMAT);
+		this.startdate = Utils.convertStringToDate(rq.getStartdate(), Constants.DATE_FORMAT);
+		this.enddate = Utils.convertStringToDate(rq.getEnddate(), Constants.DATE_FORMAT);
 		this.cost = Utils.convertToBigDecimal(rq.getCost());
-//		this.totalCharityAmount = this.totalCharityAmount != null && this.totalCharityAmount.compareTo(BigDecimal.ZERO) > 0 ? totalCharityAmount : BigDecimal.ZERO;
+		this.totalCharityAmount = BigDecimal.ZERO;
 		this.dateTime = new Date();
 		this.type = rq.getType();
 		this.status = rq.getStatus();
 		this.enable = true;
+		this.currency = rq.getCurrency();
 	}
     
 	// Getters and Setters
@@ -92,9 +100,6 @@ public class Project {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
-
-    public Date getEstimationTime() { return estimationTime; }
-    public void setEstimationTime(Date estimationTime) { this.estimationTime = estimationTime; }
 
     public BigDecimal getCost() { return cost; }
     public void setCost(BigDecimal cost) { this.cost = cost; }
@@ -120,5 +125,29 @@ public class Project {
 
 	public void setImages(List<String> images) {
 		this.images = images;
+	}
+
+	public String getCurrency() {
+		return currency;
+	}
+
+	public void setCurrency(String currency) {
+		this.currency = currency;
+	}
+
+	public Date getStartdate() {
+		return startdate;
+	}
+
+	public void setStartdate(Date startdate) {
+		this.startdate = startdate;
+	}
+
+	public Date getEnddate() {
+		return enddate;
+	}
+
+	public void setEnddate(Date enddate) {
+		this.enddate = enddate;
 	}
 }

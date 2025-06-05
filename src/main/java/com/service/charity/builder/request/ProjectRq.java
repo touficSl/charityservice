@@ -17,7 +17,10 @@ public class ProjectRq {
     private String description;
 
     @JsonDeserialize(using = SanitizedStringDeserializer.class)
-    private String estimationTime;
+    private String startdate;
+    
+    @JsonDeserialize(using = SanitizedStringDeserializer.class)
+    private String enddate;
 
     @JsonDeserialize(using = SanitizedStringDeserializer.class)
     private String cost;
@@ -29,6 +32,8 @@ public class ProjectRq {
     private String status;
 
     private Boolean enable;
+
+    private String currency;
 
     // Getters and Setters
     public Long getId() { return id; }
@@ -43,9 +48,6 @@ public class ProjectRq {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public String getEstimationTime() { return estimationTime; }
-    public void setEstimationTime(String estimationTime) { this.estimationTime = estimationTime; }
-
     public String getCost() { return cost; }
     public void setCost(String cost) { this.cost = cost; }
 
@@ -57,4 +59,22 @@ public class ProjectRq {
 
     public Boolean getEnable() { return enable; }
     public void setEnable(Boolean enable) { this.enable = enable; }
+	public String getCurrency() {
+		return currency;
+	}
+	public void setCurrency(String currency) {
+		this.currency = currency;
+	}
+	public String getStartdate() {
+		return startdate;
+	}
+	public void setStartdate(String startdate) {
+		this.startdate = startdate;
+	}
+	public String getEnddate() {
+		return enddate;
+	}
+	public void setEnddate(String enddate) {
+		this.enddate = enddate;
+	}
 }

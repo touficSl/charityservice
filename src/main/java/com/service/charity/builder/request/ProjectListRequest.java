@@ -8,6 +8,7 @@ public class ProjectListRequest {
     private String title;
     private int fromrow;
     private int torow;
+    private String status;
 	public String getTitle() {
 		return title;
 	}
@@ -25,5 +26,11 @@ public class ProjectListRequest {
 	}
 	public void setTorow(int torow) {
 		this.torow = torow;
+	}
+	public String getStatus() {
+		return status;
+	}
+	public void setStatus(String status) {
+		this.status = status;
 	}
 }

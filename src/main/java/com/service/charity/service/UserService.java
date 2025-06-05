@@ -9,6 +9,7 @@ import com.service.charity.builder.request.CheckoutRq;
 import com.service.charity.builder.request.DonateRq;
 import com.service.charity.builder.request.ProjectListRequest;
 import com.service.charity.model.PaymentSession;
+import com.service.charity.model.Project;
 import com.service.charity.model.Users;
 
 public interface UserService {
@@ -29,5 +30,7 @@ public interface UserService {
 	PaymentSession handlepaymentsession(String token, CheckoutRq rq, boolean isregisteruser);
 
 	PaymentSession handlepaymentwebhook(JSONObject json, String eventType);
+	
+	Project getProject(Long projectid);
 	
 }

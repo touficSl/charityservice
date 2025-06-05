@@ -26,12 +26,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.service.charity.builder.request.CheckoutRq;
 import com.service.charity.builder.request.DonateRq;
 import com.service.charity.builder.request.EmailDetailsRq;
@@ -39,7 +37,6 @@ import com.service.charity.builder.request.ProjectListRequest;
 import com.service.charity.builder.response.DatatableResponse;
 import com.service.charity.builder.response.MessageResponse;
 import com.service.charity.config.Constants;
-import com.service.charity.config.SanitizedStringDeserializer;
 import com.service.charity.model.Charity;
 import com.service.charity.model.PaymentSession;
 import com.service.charity.model.Project;
@@ -50,7 +47,8 @@ import com.service.charity.reposiroty.PaymentSessionRepository;
 import com.service.charity.reposiroty.ProjectImageRepository;
 import com.service.charity.reposiroty.ProjectRepository;
 import com.service.charity.rest.call.RegisterUser;
-import com.service.charity.rest.call.VerifyAuth;
+
+import jakarta.persistence.criteria.Predicate;
 
 
 @Service
@@ -91,8 +89,9 @@ public class UserServiceImpl implements UserService {
 
 	@Value("${spring.serverpass}") 
 	private String serverpass;
-	
+
 	private static boolean isdebug = true;
+	private static boolean updatestatusautomatically = true;
 	
 	@Override
 	public ResponseEntity<?> projectlist(Locale locale, boolean b, Integer page, Integer size, String search,
@@ -144,30 +143,55 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public ResponseEntity<?> projectlist(Locale locale, ProjectListRequest request) {
-		try {
+	    try {
 	        int page = request.getFromrow() / (request.getTorow() - request.getFromrow());
 	        int size = request.getTorow() - request.getFromrow();
 
 	        Pageable pageable = PageRequest.of(page, size, Sort.by("dateTime").descending());
 
-	        Page<Project> projectPage;
+	        Specification<Project> spec = (root, query, cb) -> {
+	            List<Predicate> predicates = new ArrayList<>();
 
-	        if (request.getTitle() != null && !request.getTitle().isEmpty()) {
-	            projectPage = projectRepository.findByTitleContainingIgnoreCase(request.getTitle(), pageable);
-	        } else {
-	            projectPage = projectRepository.findAll(pageable);
-	        }
-	        
+	            // Filter enabled = 1
+	            predicates.add(cb.equal(root.get("enable"), Boolean.TRUE));
+
+	            // Filter title if provided
+	            if (request.getTitle() != null && !request.getTitle().isEmpty()) {
+	                predicates.add(cb.like(cb.lower(root.get("title")), "%" + request.getTitle().toLowerCase() + "%"));
+	            }
+
+	            // Filter status
+	            if (request.getStatus() != null && !request.getStatus().isEmpty()) {
+	                List<String> statuses = new ArrayList<>();
+	                if (request.getStatus().equalsIgnoreCase("active")) {
+	                    statuses.add("Lunching");
+	                    statuses.add("In Progress");
+	                } else if (request.getStatus().equalsIgnoreCase("completed")) {
+	                    statuses.add("Fully Funded");
+	                    statuses.add("Operation");
+	                    statuses.add("Delivered");
+	                }
+	                if (!statuses.isEmpty()) {
+	                    predicates.add(root.get("status").in(statuses));
+	                }
+	            }
+
+	            return cb.and(predicates.toArray(new Predicate[0]));
+	        };
+
+	        Page<Project> projectPage = projectRepository.findAll(spec, pageable);
+
 	        for (Project project : projectPage.getContent()) {
-				List<ProjectImage> images = projectImageRepository.findByProjectId(project.getId());
-				List<String> imagelist = new ArrayList<String>();
-				if (images != null && images.size() > 0)
-					for (ProjectImage pi : images)
-						imagelist.add(pi.getPath());
-				project.setImages(imagelist);
+	            List<ProjectImage> images = projectImageRepository.findByProjectId(project.getId());
+	            List<String> imagelist = new ArrayList<>();
+	            if (images != null && !images.isEmpty()) {
+	                for (ProjectImage pi : images)
+	                    imagelist.add(pi.getPath());
+	            }
+	            project.setImages(imagelist);
 	        }
-			
-	        Map<String, Object> response = new HashMap();
+
+	        Map<String, Object> response = new HashMap<>();
 	        response.put("projectList", projectPage.getContent());
 	        response.put("totalElements", projectPage.getTotalElements());
 
@@ -382,6 +406,13 @@ public class UserServiceImpl implements UserService {
                 BigDecimal totalamount = charityRepository.sumoftotalcharityamount(ps.getProjectid());
                 projectentity.setTotalCharityAmount(totalamount);
     	        if(isdebug) System.out.println("Total Charity Amount >> " + totalamount);
+                
+                if (updatestatusautomatically && 
+                		totalamount.compareTo(projectentity.getCost()) >= 0)
+                	if (projectentity.getStatus().equals("Lunching") || 
+                			projectentity.getStatus().equals("In Progress"))
+                		projectentity.setStatus("Fully Funded");
+                
                 projectRepository.save(projectentity);
             }
             
@@ -425,6 +456,20 @@ public class UserServiceImpl implements UserService {
     		boolean sent = emailService.sendSimpleMail(rq);
         }
 		return ps;
+	}
+
+	@Override
+	public Project getProject(Long projectid) {
+		try {
+			
+	        Optional<Project> project = projectRepository.findById(projectid); 
+	        if (project.isPresent()) {
+	        	return project.get();
+	        }
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 }

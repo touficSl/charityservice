@@ -30,6 +30,7 @@ import com.service.charity.builder.request.CheckoutRq;
 import com.service.charity.builder.request.ProjectListRequest;
 import com.service.charity.config.Constants;
 import com.service.charity.model.PaymentSession;
+import com.service.charity.model.Project;
 import com.service.charity.model.Users;
 import com.service.charity.service.AuthService;
 import com.service.charity.service.GoogleRecaptchaService;
@@ -105,14 +106,19 @@ public class PublicController {
 		}
 		
 		Stripe.apiKey = stripeapikey; 
+		
+		Project project = userService.getProject(rq.getProjectid());
+        if (project == null) 
+            return ResponseEntity.status(400).body("Invalid request");
 
+        String currency = project.getCurrency() != null ? project.getCurrency() : Constants.CURRENCY;
 		long amountInCents = rq.getAmount().multiply(BigDecimal.valueOf(100)).longValue();
 		List<SessionCreateParams.LineItem> lineItems = List.of(
 		    SessionCreateParams.LineItem.builder()
 		        .setQuantity(1L)
 		        .setPriceData(
 		            SessionCreateParams.LineItem.PriceData.builder()
-		                .setCurrency(Constants.CURRENCY)
+		                .setCurrency(currency)
 		                .setUnitAmount(amountInCents) // (in fils)
 		                .setProduct(stripeProductId) // Use the Product ID here
 		                .build()
@@ -124,7 +130,7 @@ public class PublicController {
 
 		SessionCreateParams params = SessionCreateParams.builder().addAllLineItem(lineItems)
 				.setMode(SessionCreateParams.Mode.PAYMENT)
-				.setSuccessUrl("http://mission.westeurope.cloudapp.azure.com/public/successpayment?session_id={CHECKOUT_SESSION_ID}")
+				.setSuccessUrl("http://mission.westeurope.cloudapp.azure.com/public/successpayment?session_id={CHECKOUT_SESSION_ID}&ps=" + ps.getId())
 				.setCancelUrl("http://mission.westeurope.cloudapp.azure.com/public/cancelpayment")
 				.putMetadata(Constants.PSID, ps.getId())
 				.setCustomerCreation(SessionCreateParams.CustomerCreation.ALWAYS)
