@@ -90,7 +90,7 @@ public class PublicController {
 //		if (verifycaptcha != null) 
 //			return verifycaptcha;
 
-		boolean isregisteruser = true;
+		boolean isregisteruser = rq.getUsername().equals(Constants.anonymous) ? false : true;
 		if (token != null) {
 			ResponseEntity<?> auth = authService.callAuth(apikey, apisecret, username, token, Constants.DONOTCHECKME, locale.getLanguage());
 	

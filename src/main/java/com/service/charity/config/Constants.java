@@ -39,4 +39,5 @@ public class Constants {
 	public static final String DONOTCHECKME = "DONOTCHECKME_2943$@#5^&jDE";
 
 	public static final String CURRENCY = "aed";
+	public static final String anonymous = "anonymous";
 }

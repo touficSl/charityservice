@@ -416,7 +416,8 @@ public class UserServiceImpl implements UserService {
                 projectRepository.save(projectentity);
             }
             
-            if (ps.isRegisteruser()) {
+            if (!ps.getUsername().equals(Constants.anonymous) &&
+            		ps.isRegisteruser()) {
     	        if(isdebug) System.out.println("Register new user.");
         		// register user after payment
             	// call auth to register a user and send email to reset his password (use ps data)
@@ -446,14 +447,16 @@ public class UserServiceImpl implements UserService {
             	
             }
 
-    		// send email to username = email to thank him for his donation
-            EmailDetailsRq rq = new EmailDetailsRq();
-            rq.setName(ps.getName());
-            rq.setRecipient(ps.getUsername()); // ps.getEmail()
-            rq.setSubject("Thank You");
-            String projecttitle = projectentity != null ? projectentity.getTitle() : "";
-            rq.setMsgBody("Hi, " + ps.getName() + "<br>Thank you for your donation to the project " + projecttitle);
-    		boolean sent = emailService.sendSimpleMail(rq);
+            if (!ps.getUsername().equals(Constants.anonymous)) {
+	    		// send email to username = email to thank him for his donation
+	            EmailDetailsRq rq = new EmailDetailsRq();
+	            rq.setName(ps.getName());
+	            rq.setRecipient(ps.getUsername()); // ps.getEmail()
+	            rq.setSubject("Thank You");
+	            String projecttitle = projectentity != null ? projectentity.getTitle() : "";
+	            rq.setMsgBody("Hi, " + ps.getName() + "<br>Thank you for your donation to the project " + projecttitle);
+	    		boolean sent = emailService.sendSimpleMail(rq);
+            }
         }
 		return ps;
 	}
