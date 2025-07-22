@@ -3,7 +3,7 @@ package com.service.charity.builder.request;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.service.charity.config.SanitizedStringDeserializer;
 
-public class ProjectRq {
+public class ActivityRq {
 
     private Long id;
 
@@ -30,6 +30,15 @@ public class ProjectRq {
 
     @JsonDeserialize(using = SanitizedStringDeserializer.class)
     private String status;
+
+    @JsonDeserialize(using = SanitizedStringDeserializer.class)
+    private String fblink;
+
+    @JsonDeserialize(using = SanitizedStringDeserializer.class)
+    private String instalink;
+
+    @JsonDeserialize(using = SanitizedStringDeserializer.class)
+    private String tiktoklink;
 
     private Boolean enable;
 
@@ -77,5 +86,23 @@ public class ProjectRq {
 	}
 	public void setEnddate(String enddate) {
 		this.enddate = enddate;
+	}
+	public String getFblink() {
+		return fblink;
+	}
+	public void setFblink(String fblink) {
+		this.fblink = fblink;
+	}
+	public String getInstalink() {
+		return instalink;
+	}
+	public void setInstalink(String instalink) {
+		this.instalink = instalink;
+	}
+	public String getTiktoklink() {
+		return tiktoklink;
+	}
+	public void setTiktoklink(String tiktoklink) {
+		this.tiktoklink = tiktoklink;
 	}
 }

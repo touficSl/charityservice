@@ -30,6 +30,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.service.charity.builder.request.ActivityListRequest;
 import com.service.charity.builder.request.CheckoutRq;
 import com.service.charity.builder.request.DonateRq;
 import com.service.charity.builder.request.EmailDetailsRq;
@@ -37,11 +38,15 @@ import com.service.charity.builder.request.ProjectListRequest;
 import com.service.charity.builder.response.DatatableResponse;
 import com.service.charity.builder.response.MessageResponse;
 import com.service.charity.config.Constants;
+import com.service.charity.model.Activity;
+import com.service.charity.model.ActivityImage;
 import com.service.charity.model.Charity;
 import com.service.charity.model.PaymentSession;
 import com.service.charity.model.Project;
 import com.service.charity.model.ProjectImage;
 import com.service.charity.model.Users;
+import com.service.charity.reposiroty.ActivityImageRepository;
+import com.service.charity.reposiroty.ActivityRepository;
 import com.service.charity.reposiroty.CharityRepository;
 import com.service.charity.reposiroty.PaymentSessionRepository;
 import com.service.charity.reposiroty.ProjectImageRepository;
@@ -70,10 +75,19 @@ public class UserServiceImpl implements UserService {
 	PaymentSessionRepository paymentSessionRepository;
 
 	@Autowired
+	ActivityRepository activityRepository;
+	
+	@Autowired
+	ActivityImageRepository activityImageRepository;
+
+	@Autowired
 	EmailService emailService;
 
 	@Value("${spring.file.uploaddir}") 
     private String fileuploaddir;
+
+	@Value("${spring.file.activity.uploaddir}") 
+    private String activityfileuploaddir;
 
 
 	@Value("${spring.auth.endpoint.api}") 
@@ -475,4 +489,91 @@ public class UserServiceImpl implements UserService {
 		return null;
 	}
 	
+	
+	@Override
+	public ResponseEntity<?> activitylist(Locale locale, ActivityListRequest request) {
+	    try {
+	        int page = request.getFromrow() / (request.getTorow() - request.getFromrow());
+	        int size = request.getTorow() - request.getFromrow();
+
+	        Pageable pageable = PageRequest.of(page, size, Sort.by("dateTime").descending());
+
+	        Specification<Activity> spec = (root, query, cb) -> {
+	            List<Predicate> predicates = new ArrayList<>();
+
+	            // Filter enabled = 1
+	            predicates.add(cb.equal(root.get("enable"), Boolean.TRUE));
+
+	            // Filter title if provided
+	            if (request.getTitle() != null && !request.getTitle().isEmpty()) {
+	                predicates.add(cb.like(cb.lower(root.get("title")), "%" + request.getTitle().toLowerCase() + "%"));
+	            }
+
+	            return cb.and(predicates.toArray(new Predicate[0]));
+	        };
+
+	        Page<Activity> pages = activityRepository.findAll(spec, pageable);
+
+	        for (Activity activity : pages.getContent()) {
+	            List<ActivityImage> images = activityImageRepository.findByActivityId(activity.getId());
+	            List<String> imagelist = new ArrayList<>();
+	            if (images != null && !images.isEmpty()) {
+	                for (ActivityImage pi : images)
+	                    imagelist.add(pi.getPath());
+	            }
+	            activity.setImages(imagelist);
+	        }
+
+	        Map<String, Object> response = new HashMap<>();
+	        response.put("activityList", pages.getContent());
+	        response.put("totalElements", pages.getTotalElements());
+
+	        return ResponseEntity.ok(response);
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return ResponseEntity.ok(new MessageResponse(messageService.getMessage("exception_case", locale), 111));
+	    }
+	}
+
+	@Override
+	public ResponseEntity<?> activitydetails(Locale locale, Long id) {
+		try {
+			Optional<Activity> opt = activityRepository.findById(id);
+			if (!opt.isPresent()) 
+				return ResponseEntity.ok(new MessageResponse(messageService.getMessage("not_found", locale), 122));
+			
+			Activity activity = opt.get();
+			List<ActivityImage> images = activityImageRepository.findByActivityId(activity.getId());
+			List<String> imagelist = new ArrayList<String>();
+			if (images != null && images.size() > 0)
+				for (ActivityImage pi : images)
+					imagelist.add(pi.getPath());
+			activity.setImages(imagelist);
+			return ResponseEntity.ok(activity);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.ok(new MessageResponse(messageService.getMessage("exception_case", locale), 111));
+		}
+	}
+
+	@Override
+	public ResponseEntity<?> activitydownloadfile(String fileName) {
+		try {
+	        Path filePath = Paths.get(activityfileuploaddir).resolve(fileName).normalize();
+	        Resource resource = new UrlResource(filePath.toUri());
+	
+	        if (!resource.exists()) 
+				return ResponseEntity.ok(new MessageResponse("resource_not_found", 111));
+	
+	        String contentType = getFileContentType(resource);
+	        return ResponseEntity.ok()
+	                .contentType(MediaType.parseMediaType(contentType))
+	                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+	                .body(resource);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.ok(new MessageResponse("exception_case", 111));
+		}
+	}
 }

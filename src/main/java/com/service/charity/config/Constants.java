@@ -25,11 +25,13 @@ public class Constants {
 	public static final String DATETIME_FORMAT = "dd-MM-yyyy HH:mm";
 
 	public static final String PROJECT_PREFIX = "PRCT_";
+	public static final String ACTIVITY_PREFIX = "ACTI_";
 
     public static final String SELLER_ID = "255484310947";
     public static final String SECRET_WORD = "c_P9elRfxvAX6i[T28t#";
 
 	public static final String PROJECT_KEY = "PRJT_";
+	
 
 	public static final String PSID = "psid";
 

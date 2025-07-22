@@ -5,6 +5,7 @@ import java.util.Locale;
 import org.json.JSONObject;
 import org.springframework.http.ResponseEntity;
 
+import com.service.charity.builder.request.ActivityListRequest;
 import com.service.charity.builder.request.CheckoutRq;
 import com.service.charity.builder.request.DonateRq;
 import com.service.charity.builder.request.ProjectListRequest;
@@ -32,5 +33,11 @@ public interface UserService {
 	PaymentSession handlepaymentwebhook(JSONObject json, String eventType);
 	
 	Project getProject(Long projectid);
+
+	ResponseEntity<?> activitylist(Locale locale, ActivityListRequest request);
+
+	ResponseEntity<?> activitydetails(Locale locale, Long id);
+
+	ResponseEntity<?> activitydownloadfile(String fileName);
 	
 }

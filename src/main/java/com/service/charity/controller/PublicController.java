@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.service.charity.builder.request.ActivityListRequest;
 import com.service.charity.builder.request.CheckoutRq;
 import com.service.charity.builder.request.ProjectListRequest;
 import com.service.charity.config.Constants;
@@ -254,5 +255,28 @@ public class PublicController {
 
 	    return ResponseEntity.ok("Webhook received");
 	}
+	
+	
+	/**
+	 * Activities
+	 */
+	@RequestMapping(value = { "/activity/list", "/{version}/activity/list" }, method = RequestMethod.POST)
+	public ResponseEntity<?> activitylist(@RequestBody ActivityListRequest request,
+			@RequestHeader(name = "Accept-Language", required = false) Locale locale,
+			@PathVariable(name = "version", required = false) String version) {
 
+		return userService.activitylist(locale, request);
+	}
+
+	@RequestMapping(value = { "/activity/details/{id}", "/{version}/activity/details/{id}" }, method = RequestMethod.POST)
+	public ResponseEntity<?> activitydetails(@PathVariable Long id,
+			@RequestHeader(name = "Accept-Language", required = false) Locale locale) {
+		return userService.activitydetails(locale, id);
+	}
+
+	@RequestMapping(value = "/activity/download/file/{fileName}", method = RequestMethod.GET)
+	public ResponseEntity<?> activitydownloadfile(HttpServletRequest request, @PathVariable String fileName) {
+
+		return userService.activitydownloadfile(fileName);
+	}
 }

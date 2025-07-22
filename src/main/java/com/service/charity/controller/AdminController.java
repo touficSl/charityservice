@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.service.charity.builder.request.ActivityRq;
 import com.service.charity.builder.request.ProjectRq;
 import com.service.charity.model.Users;
+import com.service.charity.service.ActivityService;
 import com.service.charity.service.AdminService;
 import com.service.charity.service.CharityStatisticsService;
 import com.service.charity.service.GoogleRecaptchaService;
@@ -33,6 +35,9 @@ public class AdminController {
 
 	@Autowired
 	AdminService adminService;
+
+	@Autowired
+	ActivityService activityService;
 
 	@Autowired
 	UserService userService;
@@ -132,5 +137,82 @@ public class AdminController {
 
         Users user = (Users) request.getAttribute("user");
 		return adminService.removefile(locale, id, user);
+	}
+	
+	
+	
+	
+	
+	/**
+	 * Activity APIs
+	 */
+	
+
+	@RequestMapping(value = "/activity/list", method = RequestMethod.POST)
+	public ResponseEntity<?> activitylist(@RequestHeader(name = "Accept-Language", required = false) Locale locale,
+									HttpServletRequest request, 
+								  @RequestHeader(name = "page", required = false, defaultValue = "0") Integer page,
+								  @RequestHeader(name = "size", required = false, defaultValue = "0") Integer size,
+								  @RequestHeader(name = "search", required = false) String search,
+								  @RequestHeader(name = "sortcolumn", required = false) String sortcolumn,
+								  @RequestHeader(name = "descending", required = false, defaultValue = "false") Boolean descending,
+						          @RequestHeader(name = "draw", required = false, defaultValue = "1") Integer draw,
+								  @RequestHeader(name = "username", required = true) String username) {
+
+		Users user = (Users) request.getAttribute("user");
+		return activityService.activitylist(locale, false, page, size, search, sortcolumn, descending, draw, username, user);
+	}
+	
+	@RequestMapping(value = {"/activity/save", "/{version}/activity/save"}, 
+			method = RequestMethod.POST, headers = "Accept=application/json") 
+	public ResponseEntity<?> activitysave(
+			@RequestHeader(name = "Accept-Language", required = false) Locale locale,
+			HttpServletRequest request, 
+			@PathVariable(name = "version", required = false) String version,
+			@RequestBody ActivityRq rq) throws UnsupportedEncodingException { 
+
+		Users user = (Users) request.getAttribute("user");
+		return activityService.activitysave(locale, user, rq);
+	} 
+	
+	@RequestMapping(value = {"/activity/remove", "/{version}/activity/save"}, 
+			method = RequestMethod.POST, headers = "Accept=application/json") 
+	public ResponseEntity<?> activityremove(
+			@RequestHeader(name = "Accept-Language", required = false) Locale locale,
+			HttpServletRequest request, 
+			@PathVariable(name = "version", required = false) String version,
+		  @RequestHeader(name = "id", required = true) Long id) throws UnsupportedEncodingException { 
+
+		Users user = (Users) request.getAttribute("user");
+		return activityService.activityremove(locale, user, id);
+	} 
+
+	@RequestMapping(value = "/activity/files/list", method = RequestMethod.POST)
+	public ResponseEntity<?> activityfileslist(HttpServletRequest request,
+											  @RequestHeader(name = "Accept-Language", required = false) Locale locale,
+									          @RequestHeader(name = "activityid", required = true) Long activityid) {
+
+        Users user = (Users) request.getAttribute("user");
+		return activityService.fileslist(locale, activityid, user);
+	}
+	
+
+	@RequestMapping(value = "/activity/files/upload", method = RequestMethod.POST)
+    public ResponseEntity<?> activityuploadfiles(HttpServletRequest request, 
+			  							@RequestHeader(name = "Accept-Language", required = false) Locale locale,
+										@RequestHeader(name = "activityid", required = true) Long activityid,
+										@RequestParam("file") MultipartFile[] files) {
+ 
+        Users user = (Users) request.getAttribute("user");
+        return activityService.uploadfiles(locale, user, files, activityid);
+    }
+
+	@RequestMapping(value = "/activity/file/remove/{id}", method = RequestMethod.POST)
+	public ResponseEntity<?> activityfileremove(HttpServletRequest request,
+											  @RequestHeader(name = "Accept-Language", required = false) Locale locale,
+											  @PathVariable(name = "id", required = true) Long id) {
+
+        Users user = (Users) request.getAttribute("user");
+		return activityService.removefile(locale, id, user);
 	}
 }
