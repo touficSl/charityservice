@@ -1,6 +1,7 @@
 package com.service.charity.controller;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -28,12 +29,14 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.service.charity.builder.request.ActivityListRequest;
 import com.service.charity.builder.request.CheckoutRq;
+import com.service.charity.builder.request.EmailDetailsRq;
 import com.service.charity.builder.request.ProjectListRequest;
 import com.service.charity.config.Constants;
 import com.service.charity.model.PaymentSession;
 import com.service.charity.model.Project;
 import com.service.charity.model.Users;
 import com.service.charity.service.AuthService;
+import com.service.charity.service.EmailService;
 import com.service.charity.service.GoogleRecaptchaService;
 import com.service.charity.service.UserService;
 import com.stripe.Stripe;
@@ -58,6 +61,9 @@ public class PublicController {
 
 	@Autowired
 	AuthService authService;
+
+	@Autowired
+	EmailService emailService;
 
     private static final String ENDPOINT_SECRET = "whsec_YMBsc2t23Xxz51AY5dviFUlp6wzv6AlY";
     private static final String stripeProductId = "prod_SN1TmxeWcLNrrL";
@@ -278,5 +284,28 @@ public class PublicController {
 	public ResponseEntity<?> activitydownloadfile(HttpServletRequest request, @PathVariable String fileName) {
 
 		return userService.activitydownloadfile(fileName);
+	}
+	
+	
+	
+	@RequestMapping(value = {"/email", "/{version}/email"}, 
+			method = RequestMethod.POST, headers = "Accept=application/json") 
+	public ResponseEntity<?> sendEmail(
+			HttpServletRequest request, 
+			@PathVariable(name = "version", required = false) String version,
+			@RequestBody EmailDetailsRq rq) throws UnsupportedEncodingException { 
+
+//		ResponseEntity<String> verifycaptcha = googleRecaptchaService.verifyRecaptcha(rq.getCaptchaToken());
+//		if (verifycaptcha != null) 
+//			return verifycaptcha;
+		
+		boolean sent = emailService.sendSimpleMail(rq);
+
+		HashMap<String, Boolean> map = new HashMap<String, Boolean>();
+		map.put("success", sent);
+		
+		JSONObject response = new JSONObject(map);
+		
+		return new ResponseEntity<String>(response.toString(), HttpStatus.OK);
 	}
 }

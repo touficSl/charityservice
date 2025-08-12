@@ -175,7 +175,7 @@ public class AdminController {
 		return activityService.activitysave(locale, user, rq);
 	} 
 	
-	@RequestMapping(value = {"/activity/remove", "/{version}/activity/save"}, 
+	@RequestMapping(value = {"/activity/remove", "/{version}/activity/remove"}, 
 			method = RequestMethod.POST, headers = "Accept=application/json") 
 	public ResponseEntity<?> activityremove(
 			@RequestHeader(name = "Accept-Language", required = false) Locale locale,

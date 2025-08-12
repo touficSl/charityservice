@@ -21,5 +21,5 @@ public interface ActivityImageRepository extends JpaRepository<ActivityImage, Lo
     @Modifying
     @Transactional
 	@Query("DELETE FROM ActivityImage c WHERE c.activity.id = :activityid")
-    void deleteByActivityId(@Param("activity") Long activityid);
+    void deleteByActivityId(@Param("activityid") Long activityid);
 }
