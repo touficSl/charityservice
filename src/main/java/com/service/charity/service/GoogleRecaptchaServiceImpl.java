@@ -18,8 +18,8 @@ public class GoogleRecaptchaServiceImpl implements GoogleRecaptchaService {
 	@Value("${spring.google.recaptcha.api}") 
 	private String api;
 
-	@Value("${spring.google.recaptcha.siteKey}") 
-	private String sitekey;
+	@Value("${spring.google.recaptcha.secret}") 
+	private String secret;
 
     @Autowired
     private MessageService messageService;
@@ -35,7 +35,7 @@ public class GoogleRecaptchaServiceImpl implements GoogleRecaptchaService {
 				return new ResponseEntity<MessageResponse>(messageResponse, HttpStatus.OK);
 			}
 			
-			GoogleRecaptcha googleRecaptcha = new GoogleRecaptcha(api, token, sitekey);
+			GoogleRecaptcha googleRecaptcha = new GoogleRecaptcha(api, token, secret);
 			String recaptchaRes = googleRecaptcha.callAsPost();
 			if (recaptchaRes == null) {
 
@@ -44,16 +44,8 @@ public class GoogleRecaptchaServiceImpl implements GoogleRecaptchaService {
 			}
 	
 			JSONObject recaptcharesponse = new JSONObject(recaptchaRes);
-
-			if (recaptcharesponse == null || !recaptcharesponse.has("tokenProperties")) {
-
-				MessageResponse messageResponse = new MessageResponse(messageService.getMessage("recaptcha_parsing_response_error", locale), 412);
-				return new ResponseEntity<MessageResponse>(messageResponse, HttpStatus.OK);
-			}
 			
-			JSONObject tokenProperties = recaptcharesponse.getJSONObject("tokenProperties");
-			
-			if (tokenProperties == null || !tokenProperties.has("valid") || !tokenProperties.getBoolean("valid")) {
+			if (recaptcharesponse == null || !recaptcharesponse.has("success") || !recaptcharesponse.getBoolean("success")) {
 
 				MessageResponse messageResponse = new MessageResponse(messageService.getMessage("recaptcha_verifying_validity_error", locale), 413);
 				return new ResponseEntity<MessageResponse>(messageResponse, HttpStatus.OK);

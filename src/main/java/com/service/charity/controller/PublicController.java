@@ -291,14 +291,16 @@ public class PublicController {
 	@RequestMapping(value = {"/email", "/{version}/email"}, 
 			method = RequestMethod.POST, headers = "Accept=application/json") 
 	public ResponseEntity<?> sendEmail(
+			@RequestHeader(name = "Accept-Language", required = false) Locale locale,
 			HttpServletRequest request, 
 			@PathVariable(name = "version", required = false) String version,
 			@RequestBody EmailDetailsRq rq) throws UnsupportedEncodingException { 
 
-//		ResponseEntity<String> verifycaptcha = googleRecaptchaService.verifyRecaptcha(rq.getCaptchaToken());
-//		if (verifycaptcha != null) 
-//			return verifycaptcha;
+		ResponseEntity<?> verifycaptcha = googleRecaptchaService.verifyRecaptcha(locale, rq.getCaptchaToken());
+		if (verifycaptcha != null) 
+			return verifycaptcha;
 		
+		rq.setRecipient("missiondevieinternational@gmail.com");	
 		boolean sent = emailService.sendSimpleMail(rq);
 
 		HashMap<String, Boolean> map = new HashMap<String, Boolean>();

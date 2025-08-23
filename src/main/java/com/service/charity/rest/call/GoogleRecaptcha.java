@@ -1,44 +1,34 @@
 package com.service.charity.rest.call;
 
-import java.util.HashMap;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
-import org.json.JSONObject;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 
 public class GoogleRecaptcha extends RestCallHandler{ 
 
-	private String siteKey;
+	private String secret;
 	private String token;
 	
-	public GoogleRecaptcha(String api, String token, String siteKey) {
+	public GoogleRecaptcha(String api, String token, String secret) {
 		super(api);
-		this.siteKey = siteKey;
+		this.secret = secret;
 		this.token = token;
 	} 
 	 
 	@Override
 	public void constructHeaders() {
 		this.headers = new HttpHeaders();
-		this.headers.setContentType(MediaType.APPLICATION_JSON);
+		this.headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 	}
 
-	@Override
-	public void constructBody() {
-
-		HashMap<String, HashMap<String, String>> map = new HashMap<String, HashMap<String, String>>();
-
-		HashMap<String, String> mapchild = new HashMap<String, String>();
-		mapchild.put("expectedAction", "USER_ACTION");
-		mapchild.put("siteKey", siteKey);
-		mapchild.put("token", token);
-		map.put("event", mapchild);
-		
-		JSONObject request = new JSONObject(map);
-
-		this.body = request.toString();
-		
-	}
+    @Override
+    public void constructBody() {
+        // ✅ Simple form-encoded string
+        this.body = "secret=" + URLEncoder.encode(secret, StandardCharsets.UTF_8) +
+                   "&response=" + URLEncoder.encode(token, StandardCharsets.UTF_8);
+    }
 
 }
