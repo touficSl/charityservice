@@ -137,8 +137,8 @@ public class PublicController {
 
 		SessionCreateParams params = SessionCreateParams.builder().addAllLineItem(lineItems)
 				.setMode(SessionCreateParams.Mode.PAYMENT)
-				.setSuccessUrl("http://mission.westeurope.cloudapp.azure.com/public/successpayment?session_id={CHECKOUT_SESSION_ID}&ps=" + ps.getId())
-				.setCancelUrl("http://mission.westeurope.cloudapp.azure.com/public/cancelpayment")
+				.setSuccessUrl("https://internationalmissiondevie.org/successpayment?session_id={CHECKOUT_SESSION_ID}&ps=" + ps.getId())
+				.setCancelUrl("https://internationalmissiondevie.org/cancelpayment")
 				.putMetadata(Constants.PSID, ps.getId())
 				.setCustomerCreation(SessionCreateParams.CustomerCreation.ALWAYS)
 				.setClientReferenceId(ps.getId())
