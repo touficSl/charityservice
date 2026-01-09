@@ -65,10 +65,17 @@ public class PublicController {
 	@Autowired
 	EmailService emailService;
 
-    private static final String ENDPOINT_SECRET = "whsec_YMBsc2t23Xxz51AY5dviFUlp6wzv6AlY";
-    private static final String stripeProductId = "prod_SN1TmxeWcLNrrL";
-    private static final String stripeapikey = "sk_test_51RQCR8R68I1yevpeqgncFrK242495lQJZEFZU3wjTQZm9qIyUDMkR1qA0EQPAfsIXe1YQYo9Bm1fYM6QTLL6Jlle00K6I3A2e9";
+//	TEST
+//    private static final String ENDPOINT_SECRET = "whsec_YMBsc2t23Xxz51AY5dviFUlp6wzv6AlY";
+//    private static final String stripeProductId = "prod_SN1TmxeWcLNrrL";
+//    private static final String stripeapikey = "sk_test_51RQCR8R68I1yevpeqgncFrK242495lQJZEFZU3wjTQZm9qIyUDMkR1qA0EQPAfsIXe1YQYo9Bm1fYM6QTLL6Jlle00K6I3A2e9";
 
+// PROD
+    private static final String ENDPOINT_SECRET = "whsec_iomdT8iZ8NJ1MSiqYsFOGlvQcPJeqQ4P";
+    private static final String stripeProductId = "prod_TlFjt00bwvLQ79";
+    private static final String stripeapikey = "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";
+
+    
 	@RequestMapping(value = { "/project/list", "/{version}/project/list" }, method = RequestMethod.POST)
 	public ResponseEntity<?> projectlist(@RequestBody ProjectListRequest request,
 			@RequestHeader(name = "Accept-Language", required = false) Locale locale,
@@ -234,7 +241,7 @@ public class PublicController {
 
 		String merchantRef = UUID.randomUUID().toString();
 
-		Map<String, Object> payment = Map.of("amount", amountCents, "currency", "USD", "reference", merchantRef,
+		Map<String, Object> payment = Map.of("amount", amountCents, "currency", Constants.CURRENCY.toUpperCase(), "reference", merchantRef,
 				"returnUrl", successRedirect);
 
 		String token = JWT.create().withIssuer(merchantAccountId).withKeyId(keyId).withIssuedAt(Date.from(now))
