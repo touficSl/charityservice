@@ -365,6 +365,7 @@ public class UserServiceImpl implements UserService {
                     int amountTotal = session.getInt("amount_total");
                     BigDecimal amount = BigDecimal.valueOf(amountTotal).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
 
+                    ps.setCurrency(session.getString("currency"));
                     ps.setStatus(success ? Constants.COMPLETED : Constants.FAILED);
                     ps.setAmount(amount);
                 } else {

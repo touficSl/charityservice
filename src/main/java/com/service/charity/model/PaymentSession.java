@@ -36,9 +36,12 @@ public class PaymentSession {
 
     @Column(name = "thirdpartyerror")
     private String thirdpartyerror;
-    
+
     @Column(name = "amount")
     private BigDecimal amount; 
+    
+    @Column(name = "currency")
+    private String currency; 
 
     @Column(name = "projectid", nullable = false)
     private Long projectid;
@@ -146,5 +149,13 @@ public class PaymentSession {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public String getCurrency() {
+		return currency;
+	}
+
+	public void setCurrency(String currency) {
+		this.currency = currency;
 	}
 }
