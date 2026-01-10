@@ -415,6 +415,7 @@ public class UserServiceImpl implements UserService {
                 charity.setUsername(ps.getUsername());
                 charity.setPaymentReference(ps.getId());
                 charity.setPaymentStatus(ps.getStatus());
+                charity.setCurrency(ps.getCurrency());
                 charity.setProject(projectentity);
                 charityRepository.save(charity);
                 

@@ -33,6 +33,9 @@ public class Charity {
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
+    
+    @Column(name = "currency")
+    private String currency; 
 
     @Column(nullable = false, unique = true, length = 20)
     private String paymentReference;
@@ -77,4 +80,10 @@ public class Charity {
 
     public Date getDateTime() { return dateTime; }
     public void setDateTime(Date dateTime) { this.dateTime = dateTime; }
+	public String getCurrency() {
+		return currency;
+	}
+	public void setCurrency(String currency) {
+		this.currency = currency;
+	}
 }
